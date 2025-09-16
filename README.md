@@ -1,37 +1,44 @@
 # Why So Serious? (WSS)
 
 <!-- COVERAGE_RESULTS_START -->
+
 ![Code Coverage](https://img.shields.io/badge/Code%20Coverage-18%25-yellow?style=flat)
 
-Package | Line Rate | Branch Rate | Complexity | Health
--------- | --------- | ----------- | ---------- | ------
-Server | 18% | 16% | 154 | ➖
-**Summary** | **18%** (64 / 356) | **16%** (17 / 108) | **154** | ➖
+| Package     | Line Rate          | Branch Rate        | Complexity | Health |
+| ----------- | ------------------ | ------------------ | ---------- | ------ |
+| Server      | 18%                | 16%                | 154        | ➖     |
+| **Summary** | **18%** (64 / 356) | **16%** (17 / 108) | **154**    | ➖     |
+
 <!-- COVERAGE_RESULTS_END -->
 
 This repository contains two applications developed using .NET 8:
+
 1. **WebAPI**: A backend API for handling data and WebSocket connections.
 2. **CLI**: A command-line application that communicates with the WebAPI using SignalR and displays UI using `Terminal.Gui`.
 
-Additionally, the project includes a PostgreSQL database and PgAdmin setup using Docker for managing the database. 
+Additionally, the project includes a PostgreSQL database and PgAdmin setup using Docker for managing the database.
 
 ## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Cloning the Repository](#cloning-the-repository)
-- [Setting up Docker (PostgreSQL and PgAdmin)](#setting-up-docker-postgresql-and-pgadmin)
-- [Running the WebAPI](#running-the-webapi)
-- [Running the CLI](#running-the-cli)
-- [Publishing the Applications](#publishing-the-applications)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
+
+-   [Prerequisites](#prerequisites)
+-   [Cloning the Repository](#cloning-the-repository)
+-   [Setting up Docker (PostgreSQL and PgAdmin)](#setting-up-docker-postgresql-and-pgadmin)
+-   [Running the WebAPI](#running-the-webapi)
+-   [Running the CLI](#running-the-cli)
+-   [Publishing the Applications](#publishing-the-applications)
+-   [Configuration](#configuration)
+-   [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
+
 Before you begin, ensure you have the following installed on your machine:
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker](https://www.docker.com/get-started)
-- [Git](https://git-scm.com/)
+
+-   [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+-   [Docker](https://www.docker.com/get-started)
+-   [Git](https://git-scm.com/)
 
 ## Cloning the Repository
+
 To clone the repository, run the following command:
 
 ```bash
@@ -49,13 +56,13 @@ docker-compose up -d
 
 This will:
 
-- Spin up a PostgreSQL container for the database.
-- Spin up a PgAdmin container for database management.
+-   Spin up a PostgreSQL container for the database.
+-   Spin up a PgAdmin container for database management.
 
 You can access PgAdmin in your browser at http://localhost:8080 with the following credentials:
 
-- Email: wss@wss.com
-- Password: WSS
+-   Email: wss@wss.com
+-   Password: WSS
 
 ## Applying Database Migrations
 
@@ -81,13 +88,13 @@ dotnet tool update --global dotnet-ef
 
 After installing the tool, you can apply any pending migrations to your database:
 
-- Navigate to your project's directory (the one containing your .csproj file):
+-   Navigate to your project's directory (the one containing your .csproj file):
 
 ```
 cd Server
 ```
 
-- Apply migrations to update your database schema:
+-   Apply migrations to update your database schema:
 
 ```bash
 dotnet ef database update
@@ -195,7 +202,7 @@ Database Configuration:
 
 The CLI application uses Client/appsettings.json to configure the API and WebSocket server connections:
 
-- API Configuration:
+-   API Configuration:
 
 ```json
 "WebApiServer": {
@@ -205,7 +212,7 @@ The CLI application uses Client/appsettings.json to configure the API and WebSoc
 }
 ```
 
-- WebSocket Server Configuration:
+-   WebSocket Server Configuration:
 
 ```json
 "WebSocketServer": {
@@ -216,5 +223,6 @@ The CLI application uses Client/appsettings.json to configure the API and WebSoc
 ```
 
 ## Troubleshooting
-- PostgreSQL Connection Issues: Ensure that the PostgreSQL container is running and accessible via port 5432.
-- SSL Errors: If running locally without SSL, modify the scheme in appsettings.json to http instead of https for the WebAPI.
+
+-   PostgreSQL Connection Issues: Ensure that the PostgreSQL container is running and accessible via port 5432.
+-   SSL Errors: If running locally without SSL, modify the scheme in appsettings.json to http instead of https for the WebAPI.
