@@ -1,0 +1,34 @@
+name: Sync GitHub to Azure DevOps
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  sync_to_azure:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository with full history
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Add Azure DevOps remote
+      env:
+        AZURE_DEVOPS_TOKEN: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+      run: |
+        git remote add azure "https://$AZURE_DEVOPS_TOKEN@dev.azure.com/DI1-P1-Gr2/DI1-P1-Gr2/_git/DI1-P1-Gr2"
+
+    - name: Fetch from Azure DevOps
+      run: |
+        git fetch azure dev
+
+    - name: Merge changes (if needed)
+      run: |
+        git merge --no-commit --no-ff azure/dev || echo "Merge not needed or has conflicts"
+
+    - name: Push to Azure DevOps
+      run: |
+        git push --force azure HEAD:dev
