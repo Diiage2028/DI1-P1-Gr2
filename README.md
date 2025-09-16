@@ -14,7 +14,8 @@
 This repository contains two applications developed using .NET 8:
 
 1. **WebAPI**: A backend API for handling data and WebSocket connections.
-2. **CLI**: A command-line application that communicates with the WebAPI using SignalR and displays UI using `Terminal.Gui`.
+2. **CLI**: A command-line application that communicates with the WebAPI using hyjuftygyukfyuy
+   SignalR and displays UI using `Terminal.Gui`.
 
 Additionally, the project includes a PostgreSQL database and PgAdmin setup using Docker for managing the database.
 
