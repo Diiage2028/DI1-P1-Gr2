@@ -147,6 +147,26 @@ public class JoinGameScreen(Window target)
 
     private async Task SelectGame()
     {
+        if (JoinableGames.Count == 0)
+        {
+            var noGamesLabel = new Label()
+            {
+                Text = "Aucune partie disponible.",
+                X = Pos.Center(),
+                Y = Pos.Center()
+            };
+
+            ListReturnButton.X = Pos.Center();
+            ListReturnButton.Y = Pos.Center() + 2;
+            ListReturnButton.Accept += (_, __) => ListReturned = true;
+
+            Target.Add(noGamesLabel);
+            Target.Add(ListReturnButton);
+
+            while (!ListReturned) { await Task.Delay(100); }
+            return;
+        }
+
         GamesList.X = GamesList.Y = Pos.Center();
         GamesList.Width = JoinableGames.Max(g => g.Name.Length);
         GamesList.Height = Math.Min(JoinableGames.Count, 20);
