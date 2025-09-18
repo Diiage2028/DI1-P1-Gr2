@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Terminal.Gui;
 
 namespace Client.Screens;
@@ -47,7 +49,7 @@ public class StatisticScreen(Window target)
         {
             X = 0,  // horizontal position: center of window
             Y = 0,              // vertical position: 2 rows down from top
-            Width = 20,
+            //Width = auto,
             Text = "Total Games :"
         };
         var totalPlayersLabel = new Label()
@@ -64,8 +66,63 @@ public class StatisticScreen(Window target)
 
         Target.Add(totalGamesLabel, totalPlayersLabel, ReturnedButton);
 
+        var httpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+        };
+
+        var httpClient = new HttpClient(httpHandler)
+        {
+            BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}"),
+        };
+
+        // Fetch data from Games API
+        try
+        {
+            // GET total games
+            var gamesResponse = await httpClient.GetAsync("/statistics/games/count");
+            if (gamesResponse.IsSuccessStatusCode)
+            {
+                // Get the value inside the json
+                var gamesJson = await gamesResponse.Content.ReadAsStringAsync();
+                var gamesData = JsonSerializer.Deserialize<Dictionary<string, int>>(gamesJson);
+                totalGamesLabel.Text = $"Total Games: {gamesData?["totalGames"] ?? 0}";
+            }
+            else
+            {
+                totalGamesLabel.Text = "Total Games: Error";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting fetching games statistics {ex.Message}");
+            totalGamesLabel.Text = "Total Games: Error";
+        }
+
+        // Fetch data from Players API
+        try
+        {
+            // GET total players
+            var playersResponse = await httpClient.GetAsync("/statistics/players/count");
+            if (playersResponse.IsSuccessStatusCode)
+            {
+                // Get the value inside the json
+                var playersJson = await playersResponse.Content.ReadAsStringAsync();
+                var playersData = JsonSerializer.Deserialize<Dictionary<string, int>>(playersJson);
+                totalPlayersLabel.Text = $"Total Players: {playersData?["totalPlayers"] ?? 0}";
+            }
+            else
+            {
+                totalPlayersLabel.Text = "Total Players: Error";
+            }
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"Error getting fetching players statistics {ex.Message}");
+            totalPlayersLabel.Text = "Total Players: Error";
+        }
+        
+
+
         await Task.CompletedTask;
     }
-
-
 }
