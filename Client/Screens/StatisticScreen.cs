@@ -1,3 +1,5 @@
+using System.Net.Http.Json;
+
 using Terminal.Gui;
 
 namespace Client.Screens;
@@ -7,9 +9,10 @@ public class StatisticScreen(Window target)
 
     private Window Target { get; } = target;
     private readonly MainMenuActionList StatList = new();
-    private readonly Button ReturnedButton = new ();
+    private readonly Button ReturnedButton = new();
     private bool Returned = false;
 
+    
     public async Task Show()
     {
         // Prepare the window (clear old content, set title, etc.)
@@ -33,28 +36,38 @@ public class StatisticScreen(Window target)
     {
         while (!Returned)
         {
-            await Task.Delay(1000);
+            await Task.Delay(200);
         }
     }
 
     // Add the statistic text elements
     private async Task AddStatistics()
     {
-        Console.WriteLine("ENter add stat");
+        var httpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+        };
+
+        var httpClient = new HttpClient(httpHandler)
+        {
+            BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}"),
+        };
+
+        var stats = await httpClient.GetFromJsonAsync<Client.Records.StatisticsResult>("/statistics/global");
         // Create labels
         var totalGamesLabel = new Label()
 
         {
             X = 0,  // horizontal position: center of window
-            Y = 0,              // vertical position: 2 rows down from top
-            Width = 20,
-            Text = "Total Games :"
+            Y = 0,  // vertical position: 2 rows down from top
+            Width = 40,
+            Text = $"Total Players : {stats?.TotalPlayers ?? 0}"
         };
         var totalPlayersLabel = new Label()
         {
             X = Pos.Left(totalGamesLabel),
             Y = Pos.Bottom(totalGamesLabel) + 1, // place below the first label
-            Text = "Total Players :"
+            Text = $"Total Game :{stats?.TotalGames ?? 0}"
         };
 
         ReturnedButton.X = Pos.Center();
@@ -66,6 +79,5 @@ public class StatisticScreen(Window target)
 
         await Task.CompletedTask;
     }
-
 
 }
