@@ -88,7 +88,7 @@ public class ActInRound(
                 return Result.Fail(finishRoundResult.Errors);
             }
         }
-        // IGameHubService → mise à jour temps réel via un hub (ex. SignalR).
+        // IGameHubService → real time update via hub.
         await gameHubService.UpdateCurrentGame(gameId: round.GameId);
 
         return Result.Ok(round);
