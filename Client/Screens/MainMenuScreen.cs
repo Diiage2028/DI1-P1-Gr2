@@ -28,7 +28,6 @@ public class MainMenuScreen(Window target)
         // Display the menu and wait until the user selects something.
         await SelectAction();
 
-        Console.WriteLine("Main menu");
         // Based on the chosen action, decide which screen to show next.
         var next = Action switch
         {
