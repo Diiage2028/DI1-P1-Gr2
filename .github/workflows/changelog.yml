@@ -138,7 +138,7 @@ jobs:
             - Windows x64: `why-so-serious-server-windows-x64.zip`
             - Linux x64: `why-so-serious-server-linux-x64.zip`
             - macOS x64: `why-so-serious-server-macos-x64.zip`
-            - Linux ARM64: ${{ matrix.output_name }}
+            - Linux ARM64: `why-so-serious-server-linux-arm64.zip`
             
             Extract the zip file and run the executable for your platform.
           files: |
