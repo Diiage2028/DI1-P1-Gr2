@@ -24,7 +24,7 @@ builder.Services.AddTransient<IGamesRepository, GamesRepository>();
 builder.Services.AddTransient<IPlayersRepository, PlayersRepository>();
 builder.Services.AddTransient<IRoundsRepository, RoundsRepository>();
 builder.Services.AddTransient<ISkillsRepository, SkillsRepository>();
-builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
+builder.Services.AddTransient<IGameStatsRepository, GameStatsRepository>();
 
 builder.Services.AddTransient<IAction<ActInRoundParams, Result<Round>>, ActInRound>();
 builder.Services.AddTransient<IAction<ApplyRoundActionParams, Result>, ApplyRoundAction>();
@@ -37,6 +37,7 @@ builder.Services.AddTransient<IAction<FinishRoundParams, Result<Round>>, FinishR
 builder.Services.AddTransient<IAction<JoinGameParams, Result<Player>>, JoinGame>();
 builder.Services.AddTransient<IAction<StartGameParams, Result<Game>>, StartGame>();
 builder.Services.AddTransient<IAction<StartRoundParams, Result<Round>>, StartRound>();
+builder.Services.AddTransient<IAction<GetStatsParams, Result<GameStat>>, GetStatsAction>();
 
 builder.Services.AddTransient<IGameHubService, GameHubService>();
 builder.Services.AddTransient<IMainHubService, MainHubService>();

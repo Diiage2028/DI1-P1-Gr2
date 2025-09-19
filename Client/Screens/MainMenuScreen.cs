@@ -37,6 +37,7 @@ public class MainMenuScreen(Window target)
             MainMenuActionList.Action.STATISTIC => new StatisticScreen(Target).Show(),
             MainMenuActionList.Action.QUIT => Task.Run(() => Application.RequestStop()), // closes app
             _ => Task.Run(() => Application.RequestStop()) // fallback = close app
+
         };
 
         // Execute the chosen action (wait until the next screen finishes).
@@ -89,7 +90,7 @@ public class MainMenuActionList : ListView
     {
         CREATE_GAME,
         JOIN_GAME,
-        STATISTIC,
+        STATS,
         QUIT
     }
 
@@ -97,7 +98,7 @@ public class MainMenuActionList : ListView
     private readonly MainMenuActionListDataSource Actions = [
         Action.CREATE_GAME,
         Action.JOIN_GAME,
-        Action.STATISTIC,
+        Action.STATS,
         Action.QUIT
     ];
 
@@ -143,8 +144,8 @@ public class MainMenuActionListDataSource : List<MainMenuActionList.Action>, ILi
             case (int) MainMenuActionList.Action.JOIN_GAME:
                 driver.AddStr("Join a game");
                 break;
-            case (int) MainMenuActionList.Action.STATISTIC:
-                driver.AddStr("Statistics");
+            case (int) MainMenuActionList.Action.STATS:
+                driver.AddStr("View stats");
                 break;
             case (int) MainMenuActionList.Action.QUIT:
                 driver.AddStr("Quit");

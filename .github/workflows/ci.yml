@@ -35,6 +35,8 @@ jobs:
 
       - name: .NET setup
         uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
 
       - name: Dependencies restoration
         run: dotnet restore
