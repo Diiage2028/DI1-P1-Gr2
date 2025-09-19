@@ -11,6 +11,7 @@ using static Server.Models.RoundAction;
 
 namespace Server.Actions;
 
+//On est dans un serveur qui gère un jeu à tours (rounds).
 public sealed record ActInRoundParams(
     RoundActionType ActionType,
     RoundActionPayload ActionPayload,
@@ -87,7 +88,7 @@ public class ActInRound(
                 return Result.Fail(finishRoundResult.Errors);
             }
         }
-
+        // IGameHubService → mise à jour temps réel via un hub (ex. SignalR).
         await gameHubService.UpdateCurrentGame(gameId: round.GameId);
 
         return Result.Ok(round);

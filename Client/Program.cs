@@ -13,7 +13,7 @@ public class Program
         var builder = new ConfigurationBuilder()
             .AddJsonFile($"{Environment.CurrentDirectory}/appsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile($"{AppContext.BaseDirectory}/appsettings.json", optional: true, reloadOnChange: true);
-
+        
         var configuration = builder.Build();
 
         var apiConfig = configuration.GetSection("WebApiServer");
