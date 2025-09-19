@@ -34,7 +34,7 @@ public class MainMenuScreen(Window target)
         {
             MainMenuActionList.Action.CREATE_GAME => new CreateGameScreen(Target).Show(),
             MainMenuActionList.Action.JOIN_GAME => new JoinGameScreen(Target).Show(),
-            MainMenuActionList.Action.STATISTIC => new StatisticScreen(Target).Show(),
+            MainMenuActionList.Action.STATS => new StatsScreen(Target).Show(),
             MainMenuActionList.Action.QUIT => Task.Run(() => Application.RequestStop()), // closes app
             _ => Task.Run(() => Application.RequestStop()) // fallback = close app
 
