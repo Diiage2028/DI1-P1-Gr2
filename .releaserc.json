@@ -1,42 +1,32 @@
 {
   "branches": ["main"],
   "plugins": [
-    "@semantic-release/commit-analyzer",
+    ["@semantic-release/commit-analyzer", {
+      "preset": "angular",
+      "releaseRules": [
+        {"type": "feat", "release": "minor"},
+        {"type": "fix", "release": "patch"},
+        {"type": "perf", "release": "patch"},
+        {"type": "docs", "release": "patch"},
+        {"type": "chore", "release": "patch"},
+        {"type": "style", "release": "patch"},
+        {"type": "refactor", "release": "patch"},
+        {"type": "test", "release": "patch"},
+        {"type": "build", "release": "patch"},
+        {"type": "ci", "release": "patch"},
+        {"type": "revert", "release": "patch"},
+        {"breaking": true, "release": "major"}
+      ]
+    }],
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
+    "@semantic-release/git",
     [
       "@semantic-release/github",
       {
-        "successComment": false,
-        "failComment": false,
-        "labels": false,
-        "releasedLabels": false,
-        "addReleases": false,
         "assets": [
-          {
-            "path": "release_artifacts/server-win-x64.zip",
-            "label": "Server for Windows x64"
-          },
-          {
-            "path": "release_artifacts/server-linux-x64.zip",
-            "label": "Server for Linux x64"
-          },
-          {
-            "path": "release_artifacts/server-osx-x64.zip",
-            "label": "Server for macOS x64"
-          },
-          {
-            "path": "release_artifacts/client-win-x64.zip",
-            "label": "Client for Windows x64"
-          },
-          {
-            "path": "release_artifacts/client-linux-x64.zip",
-            "label": "Client for Linux x64"
-          },
-          {
-            "path": "release_artifacts/client-osx-x64.zip",
-            "label": "Client for macOS x64"
-          }
+          "release_artifacts/*.zip",
+          "CHANGELOG.md"
         ]
       }
     ],
