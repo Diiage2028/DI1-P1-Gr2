@@ -28,7 +28,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x' # or 7.x depending on your project
+          dotnet-version: '9.x'
 
       - name: Install release tools
         run: |
