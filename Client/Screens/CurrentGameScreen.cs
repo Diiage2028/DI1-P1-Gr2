@@ -16,16 +16,21 @@ namespace Client.Screens;
 public class CurrentGameScreen(Window target, int gameId, string playerName)
 {
     private readonly Window Target = target;
+
+    // Reference to currently displayed view
     private CurrentGameView? CurrentView = null;
 
+    // Game metadata
     private readonly int GameId = gameId;
     private readonly string PlayerName = playerName;
     private GameOverview? CurrentGame = null;
 
+    // Game state flags
     private bool CurrentGameLoading = true;
     private bool CurrentGameStarted = false;
     private bool CurrentGameEnded = false;
 
+    // Player's chosen action for the current round
     private CurrentGameActionList.Action? CurrentRoundAction = null;
 
     public async Task Show()
@@ -45,14 +50,17 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
         return Task.CompletedTask;
     }
 
+    // Update title with the game name
     private void ReloadWindowTitle()
     {
         var gameName = CurrentGame is null ? "..." : CurrentGame.Name;
         Target.Title = $"{MainWindow.Title} - [Game {gameName}]";
     }
 
+    // Connects to SignalR hub to receive game updates
     private async Task LoadGame()
     {
+        // Setup SignalR connection to game hub
         var hubConnection = new HubConnectionBuilder()
             .WithUrl(new Uri($"{WssConfig.WebSocketServerScheme}://{WssConfig.WebSocketServerDomain}:{WssConfig.WebSocketServerPort}/games/{GameId}"), opts =>
             {
@@ -70,6 +78,7 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
             .AddJsonProtocol()
             .Build();
 
+        // Handle incoming game update events
         hubConnection.On<GameOverview>("CurrentGameUpdated", data =>
         {
             CurrentGame = data;
