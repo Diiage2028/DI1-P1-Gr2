@@ -88,7 +88,7 @@ public class StatsScreen(Window target)
         }
         else
         {
-            // Afficher les statistiques avec des labels simples
+            // shwo stats if available with simple labels
             var titleLabel = new Label()
             {
                 Text = "STATISTIQUES",
@@ -121,7 +121,7 @@ public class StatsScreen(Window target)
         Target.Add(_returnButton);
         _returnButton.SetFocus();
 
-        // Attendre que l'utilisateur clique sur le bouton Return
+        // wait for return request to main menu
         while (!_returnRequested)
         {
             await Task.Delay(100);
