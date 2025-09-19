@@ -23,6 +23,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Setup Node.js for release management
         uses: actions/setup-node@v4
@@ -36,7 +37,7 @@ jobs:
       - name: Semantic Release
         id: semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: npx semantic-release
 
   build-all-platforms:
