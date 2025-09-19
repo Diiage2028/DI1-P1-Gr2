@@ -1,0 +1,154 @@
+name: Release, Changelog & Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.semantic-release.outputs.released }}
+      version: ${{ steps.semantic-release.outputs.version }}
+      tag: ${{ steps.semantic-release.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js for release management
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install release tools
+        run: |
+          npm install -g semantic-release @semantic-release/changelog @semantic-release/git conventional-changelog-cli
+
+      - name: Semantic Release
+        id: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  build-all-platforms:
+    runs-on: ubuntu-latest
+    needs: release
+    if: success() && needs.release.outputs.released == 'true'
+    
+    strategy:
+      matrix:
+        include:
+          - project: Client
+            runtime: win-x64
+            output_name: why-so-serious-client-windows-x64
+          - project: Client
+            runtime: linux-x64
+            output_name: why-so-serious-client-linux-x64
+          - project: Client
+            runtime: osx-x64
+            output_name: why-so-serious-client-macos-x64
+          - project: Client
+            runtime: linux-arm64
+            output_name: why-so-serious-client-linux-arm64
+          - project: Server
+            runtime: win-x64
+            output_name: why-so-serious-server-windows-x64
+          - project: Server
+            runtime: linux-x64
+            output_name: why-so-serious-server-linux-x64
+          - project: Server
+            runtime: osx-x64
+            output_name: why-so-serious-server-macos-x64
+          - project: Server
+            runtime: linux-arm64
+            output_name: why-so-serious-server-linux-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build and Publish ${{ matrix.project }} for ${{ matrix.runtime }}
+        run: |
+          dotnet publish ${{ matrix.project }} \
+            -c Release \
+            -r ${{ matrix.runtime }} \
+            --self-contained true \
+            /p:PublishSingleFile=true \
+            /p:PublishTrimmed=true \
+            /p:DebugType=None \
+            /p:DebugSymbols=false \
+            -o ./publish/${{ matrix.output_name }}
+
+      - name: Create ZIP package for ${{ matrix.output_name }}
+        run: |
+          cd ./publish/${{ matrix.output_name }}
+          zip -r ../${{ matrix.output_name }}.zip .
+          cd ../..
+
+      - name: Upload artifact ${{ matrix.output_name }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output_name }}
+          path: ./publish/${{ matrix.output_name }}.zip
+
+  attach-binaries-to-release:
+    runs-on: ubuntu-latest
+    needs: [release, build-all-platforms]
+    if: success() && needs.release.outputs.released == 'true'
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./release-assets
+
+      - name: Attach binaries to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release.outputs.tag }}
+          name: Release ${{ needs.release.outputs.version }}
+          body: |
+            Multi-platform build of Why So Serious? Client and Server applications.
+            
+            **Client Applications:**
+            - Windows x64: `why-so-serious-client-windows-x64.zip`
+            - Linux x64: `why-so-serious-client-linux-x64.zip`
+            - macOS x64: `why-so-serious-client-macos-x64.zip`
+            - Linux ARM64: `why-so-serious-client-linux-arm64.zip`
+            
+            **Server Applications:**
+            - Windows x64: `why-so-serious-server-windows-x64.zip`
+            - Linux x64: `why-so-serious-server-linux-x64.zip`
+            - macOS x64: `why-so-serious-server-macos-x64.zip`
+            - Linux ARM64: ${{ matrix.output_name }}
+            
+            Extract the zip file and run the executable for your platform.
+          files: |
+            release-assets/why-so-serious-client-windows-x64/why-so-serious-client-windows-x64.zip
+            release-assets/why-so-serious-client-linux-x64/why-so-serious-client-linux-x64.zip
+            release-assets/why-so-serious-client-macos-x64/why-so-serious-client-macos-x64.zip
+            release-assets/why-so-serious-client-linux-arm64/why-so-serious-client-linux-arm64.zip
+            release-assets/why-so-serious-server-windows-x64/why-so-serious-server-windows-x64.zip
+            release-assets/why-so-serious-server-linux-x64/why-so-serious-server-linux-x64.zip
+            release-assets/why-so-serious-server-macos-x64/why-so-serious-server-macos-x64.zip
+            release-assets/why-so-serious-server-linux-arm64/why-so-serious-server-linux-arm64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
