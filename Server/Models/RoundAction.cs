@@ -10,7 +10,7 @@ public enum RoundActionType
     ParticipateInCallForTenders,
     RecruitAConsultant,
     FireAnEmployee,
-    PassMyTurn,
+    ConfirmRound,
     GenerateNewConsultant,
 }
 
@@ -19,7 +19,7 @@ public enum RoundActionType
 [JsonDerivedType(typeof(ParticipateInCallForTendersRoundAction), typeDiscriminator: "ParticipateInCallForTenders")]
 [JsonDerivedType(typeof(RecruitAConsultantRoundAction), typeDiscriminator: "RecruitAConsultant")]
 [JsonDerivedType(typeof(FireAnEmployeeRoundAction), typeDiscriminator: "FireAnEmployee")]
-[JsonDerivedType(typeof(PassMyTurnRoundAction), typeDiscriminator: "PassMyTurn")]
+[JsonDerivedType(typeof(ConfirmRoundAction), typeDiscriminator: "ConfirmRound")]
 [JsonDerivedType(typeof(GenerateNewConsultantRoundAction), typeDiscriminator: "GenerateNewConsultant")]
 public class RoundAction(int? playerId)
 {
@@ -33,8 +33,8 @@ public class RoundAction(int? playerId)
             RoundActionType.ParticipateInCallForTenders => new ParticipateInCallForTendersRoundAction(playerId),
             RoundActionType.RecruitAConsultant => new RecruitAConsultantRoundAction(playerId),
             RoundActionType.FireAnEmployee => new FireAnEmployeeRoundAction(playerId),
-            RoundActionType.PassMyTurn => new PassMyTurnRoundAction(playerId),
-            _ => new PassMyTurnRoundAction(playerId),
+            RoundActionType.ConfirmRound => new ConfirmRoundAction(playerId),
+            _ => new ConfirmRoundAction(playerId),
         };
 
         action.ApplyPayload(payload);
@@ -114,7 +114,7 @@ public class FireAnEmployeeRoundAction(int? playerId) : RoundAction(playerId)
     }
 }
 
-public class PassMyTurnRoundAction(int? playerId) : RoundAction(playerId)
+public class ConfirmRoundAction(int? playerId) : RoundAction(playerId)
 {
     protected override void ApplyPayload(RoundActionPayload payload)
     {

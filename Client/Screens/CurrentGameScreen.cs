@@ -411,8 +411,8 @@ public class CurrentGameCompanyView : CurrentGameView
     private FrameView? Treasury;
     private FrameView? Rounds;
     private FrameView? Employees;
-    private FrameView? Consultants;
-    private FrameView? CallForTenders;
+    private FrameView? Projects;
+    private FrameView? Formation;
     private FrameView? Actions;
 
     public CurrentGameCompanyView(GameOverview game, string playerName)
@@ -487,8 +487,8 @@ public class CurrentGameCompanyView : CurrentGameView
         };
 
         SetupEmployees();
-        SetupConsultants();
-        SetupCallForTenders();
+        SetupProjects();
+        SetupFormation();
 
         Body!.Add(LeftBody);
     }
@@ -616,18 +616,18 @@ public class CurrentGameCompanyView : CurrentGameView
         LeftBody!.Add(Employees);
     }
 
-    private void SetupConsultants()
+    private void SetupProjects()
     {
-        Consultants = new()
+        Projects = new()
         {
-            Title = "Consultants",
+            Title = "Projects",
             X = Pos.Left(Employees!),
             Y = Pos.Bottom(Employees!) + 1,
             Width = Dim.Fill(),
             Height = Dim.Percent(30)
         };
 
-        var consultantsTree = new TreeView()
+        var projectsTree = new TreeView()
         {
             X = 0,
             Y = 0,
@@ -636,42 +636,78 @@ public class CurrentGameCompanyView : CurrentGameView
             BorderStyle = LineStyle.Dotted
         };
 
-        var consultantsData = new List<TreeNode>();
+        var projectsData = new List<TreeNode>();
 
-        foreach (var consultant in Game.Consultants.ToList())
-        {
-            var node = new TreeNode($"{consultant.Name} | {consultant.SalaryRequirement} $");
-            var skills = consultant.Skills.ToList();
+        // if (Game.Projects != null)
+        // {
+        //     foreach (var project in Game.Projects.ToList())
+        //     {
+        //         var node = new TreeNode($"{project.Name} | Reward: {project.Reward} $ | Deadline: {project.Deadline}");
+        //         var requirements = project.Requirements.ToList();
+        //
+        //         foreach (var requirement in requirements)
+        //         {
+        //             node.Children.Add(new TreeNode($"{requirement.SkillName} | Level: {requirement.RequiredLevel}"));
+        //         }
+        //
+        //         projectsData.Add(node);
+        //     }
+        // }
 
-            foreach (var skill in skills)
-            {
-                node.Children.Add(new TreeNode($"{skill.Name} | {skill.Level}"));
-            }
+        projectsTree.BorderStyle = LineStyle.None;
+        projectsTree.AddObjects(projectsData);
+        projectsTree.ExpandAll();
 
-            consultantsData.Add(node);
-        }
+        Projects.Add(projectsTree);
 
-        consultantsTree.BorderStyle = LineStyle.None;
-        consultantsTree.AddObjects(consultantsData);
-        consultantsTree.ExpandAll();
-
-        Consultants.Add(consultantsTree);
-
-        LeftBody!.Add(Consultants);
+        LeftBody!.Add(Projects);
     }
 
-    private void SetupCallForTenders()
+    private void SetupFormation()
     {
-        CallForTenders = new()
+        Formation = new()
         {
-            Title = "Call For Tenders",
-            X = Pos.Left(Consultants!),
-            Y = Pos.Bottom(Consultants!) + 1,
+            Title = "Formation",
+            X = Pos.Left(Projects!),
+            Y = Pos.Bottom(Projects!) + 1,
             Width = Dim.Fill(),
             Height = Dim.Percent(30)
         };
 
-        LeftBody!.Add(CallForTenders);
+        var formationTree = new TreeView()
+        {
+            X = 0,
+            Y = 0,
+            Width = Dim.Fill(),
+            Height = Dim.Fill(),
+            BorderStyle = LineStyle.Dotted
+        };
+
+        var formationData = new List<TreeNode>();
+
+        // if (Game.FormationPrograms != null)
+        // {
+        //     foreach (var program in Game.FormationPrograms.ToList())
+        //     {
+        //         var node = new TreeNode($"{program.Name} | Cost: {program.Cost} $ | Duration: {program.Duration}");
+        //         var skills = program.Skills.ToList();
+        //
+        //         foreach (var skill in skills)
+        //         {
+        //             node.Children.Add(new TreeNode($"{skill.Name} | Level Increase: +{skill.LevelIncrease}"));
+        //         }
+        //
+        //         formationData.Add(node);
+        //     }
+        // }
+
+        formationTree.BorderStyle = LineStyle.None;
+        formationTree.AddObjects(formationData);
+        formationTree.ExpandAll();
+
+        Formation.Add(formationTree);
+
+        LeftBody!.Add(Formation);
     }
 
     private void SetupActions()
@@ -716,8 +752,8 @@ public class CurrentGameCompanyView : CurrentGameView
     private void RemoveBody()
     {
         LeftBody!.Remove(Employees);
-        LeftBody!.Remove(Consultants);
-        LeftBody!.Remove(CallForTenders);
+        LeftBody!.Remove(Projects);
+        LeftBody!.Remove(Formation);
 
         RightBody!.Remove(Actions);
 
@@ -733,18 +769,18 @@ public class CurrentGameActionList : ListView
     public enum Action
     {
         SendEmployeeForTraining,
-        ParticipateInCallForTenders,
-        RecruitAConsultant,
+        ParticipateInProject,
+        EnrollInFormation,
         FireAnEmployee,
-        PassMyTurn
+        ConfirmRound
     }
 
     private readonly CurrentGameActionListDataSource Actions = [
         Action.SendEmployeeForTraining,
-        Action.ParticipateInCallForTenders,
-        Action.RecruitAConsultant,
+        Action.ParticipateInProject,
+        Action.EnrollInFormation,
         Action.FireAnEmployee,
-        Action.PassMyTurn
+        Action.ConfirmRound
     ];
 
     public CurrentGameActionList()
@@ -778,17 +814,17 @@ public class CurrentGameActionListDataSource : List<CurrentGameActionList.Action
             case (int) CurrentGameActionList.Action.SendEmployeeForTraining:
                 driver.AddStr("Send Employee For Training");
                 break;
-            case (int) CurrentGameActionList.Action.ParticipateInCallForTenders:
-                driver.AddStr("Participate In Call For Tenders");
+            case (int) CurrentGameActionList.Action.ParticipateInProject:
+                driver.AddStr("Participate In Project");
                 break;
-            case (int) CurrentGameActionList.Action.RecruitAConsultant:
-                driver.AddStr("Recruit A Consultant");
+            case (int) CurrentGameActionList.Action.EnrollInFormation:
+                driver.AddStr("Enroll In Formation");
                 break;
             case (int) CurrentGameActionList.Action.FireAnEmployee:
                 driver.AddStr("Fire An Employee");
                 break;
-            case (int) CurrentGameActionList.Action.PassMyTurn:
-                driver.AddStr("Pass My Turn");
+            case (int) CurrentGameActionList.Action.ConfirmRound:
+                driver.AddStr("Confirm My Turn");
                 break;
         }
     }
