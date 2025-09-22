@@ -102,6 +102,7 @@ public class CreateGameScreen(Window target)
 
         Target.Add(loadingDialog);
 
+        // Security breach / ! \
         var httpHandler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
