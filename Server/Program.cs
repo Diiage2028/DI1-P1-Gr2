@@ -1,5 +1,7 @@
 using FluentResults;
 
+using Microsoft.EntityFrameworkCore;
+
 using Server.Actions;
 using Server.Actions.Contracts;
 using Server.Endpoints.Extensions;
@@ -43,6 +45,24 @@ builder.Services.AddTransient<IGameHubService, GameHubService>();
 builder.Services.AddTransient<IMainHubService, MainHubService>();
 
 var app = builder.Build();
+
+// Apply database migrations automatically on startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<WssDbContext>();
+        context.Database.Migrate(); // This applies pending migrations
+        Console.WriteLine("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while applying migrations: {ex.Message}");
+        // Don't throw here unless you want the application to fail completely
+        // You might want to log this error instead
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

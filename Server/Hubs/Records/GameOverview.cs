@@ -36,7 +36,7 @@ public record ConsultantOverview(
 public sealed record EmployeeOverview(
     int Id,
     string Name,
-    int Salary,
+    double Salary,
     ICollection<SkillOverview> Skills
 );
 

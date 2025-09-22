@@ -55,9 +55,9 @@ public class ApplyRoundAction(
         }
 
         // @todo: Implement the logic for applying the round action
+        Console.WriteLine(JsonObject.Parse(action.ToString() ?? "{}")!.ToJsonString());
 
         await gameHubService.UpdateCurrentGame(gameId: gameId);
-
         return Result.Ok();
     }
 }
