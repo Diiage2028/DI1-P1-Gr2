@@ -1,4 +1,4 @@
-name: Release & Changelog
+name: Release, Changelog & Build
 
 on:
   push:
@@ -14,6 +14,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.semantic-release.outputs.released }}
+      version: ${{ steps.semantic-release.outputs.version }}
+      tag: ${{ steps.semantic-release.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v4

@@ -18,7 +18,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
     public DbSet<Round> Rounds { get; set; } = null!;
     public DbSet<Skill> Skills { get; set; } = null!;
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) // Creates instance of connexion
     {
         var dbOptions = configuration.GetSection("Database");
 
@@ -33,19 +33,19 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
         optionsBuilder.UseNpgsql(dbConnectionString);
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder) // writes relations between classes
     {
         modelBuilder.Entity<Company>(e =>
         {
             e.ToTable("companies");
-            e.HasKey(e => e.Id);
+            e.HasKey(e => e.Id); 
             e.Property(e => e.Name).HasColumnType("varchar(255)");
-            e.Property(e => e.Treasury).HasColumnType("integer").HasDefaultValue(1000000);
+            e.Property(e => e.Treasury).HasColumnType("integer").HasDefaultValue(1000000); // Default value
             e.HasOne(e => e.Player)
                 .WithOne(e => e.Company)
-                .HasForeignKey<Company>(e => e.PlayerId)
+                .HasForeignKey<Company>(e => e.PlayerId) // relation 1 1
                 .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // if delete player, company gets deleted
             e.HasMany(e => e.Employees)
                 .WithOne(e => e.Company)
                 .HasForeignKey(e => e.CompanyId);

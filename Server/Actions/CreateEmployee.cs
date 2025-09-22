@@ -12,42 +12,57 @@ using Server.Models;
 using Server.Persistence.Contracts;
 
 namespace Server.Actions;
-
+// Immutable record (DTO) holding parameters needed to create an Employee.
+// Either a CompanyId or a Company object must be provided.
 public sealed record CreateEmployeeParams(string EmployeeName, int? CompanyId = null, Company? Company = null);
 
+// Validator that defines rules for CreateEmployeeParams using FluentValidation.
 public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeParams>
 {
     public CreateEmployeeValidator()
     {
+        // Employee name must not be empty
         RuleFor(p => p.EmployeeName).NotEmpty();
+
+        // If no Company object is provided, CompanyId must be provided
         RuleFor(p => p.CompanyId).NotEmpty().When(p => p.Company is null);
+
+        // If no CompanyId is provided, Company object must be provided
         RuleFor(p => p.Company).NotEmpty().When(p => p.CompanyId is null);
     }
 }
 
+// Action class responsible for the business logic of creating an Employee.
+// Implements IAction interface: input = CreateEmployeeParams, output = Result<Employee>.
 public class CreateEmployee(
-    ICompaniesRepository companiesRepository,
-    IEmployeesRepository employeesRepository,
-    ISkillsRepository skillsRepository,
-    IGameHubService gameHubService
+    ICompaniesRepository companiesRepository,   // Access company data
+    IEmployeesRepository employeesRepository,   // Save employee data
+    ISkillsRepository skillsRepository,         // Retrieve skills
+    IGameHubService gameHubService              // Notify clients via SignalR
 ) : IAction<CreateEmployeeParams, Result<Employee>>
 {
+    // Core business logic for creating an employee
     public async Task<Result<Employee>> PerformAsync(CreateEmployeeParams actionParams)
     {
         var rnd = new Random();
 
+        // Validate input parameters with the validator
         var actionValidator = new CreateEmployeeValidator();
         var actionValidationResult = await actionValidator.ValidateAsync(actionParams);
 
+        // If validation fails, return failure result with error messages
         if (actionValidationResult.Errors.Count != 0)
         {
             return Result.Fail(actionValidationResult.Errors.Select(e => e.ErrorMessage));
         }
 
+        // Deconstruct parameters for easier access
         var (employeeName, companyId, company) = actionParams;
 
+        // If no company object was passed, retrieve it by Id
         company ??= await companiesRepository.GetById(companyId!.Value);
 
+        // If company is still null, return failure
         if (company is null)
         {
             Result.Fail($"Company with Id \"{companyId}\" not found.");
@@ -77,10 +92,13 @@ public class CreateEmployee(
         // Set the calculated salary
         employee.Salary = totalSalary;
 
+        // Save the new employee in the repository
         await employeesRepository.SaveEmployee(employee);
 
+        // Notify clients that the game state has changed
         await gameHubService.UpdateCurrentGame(gameId: company.Player.GameId);
 
+        // Return success with the created employee
         return Result.Ok(employee);
     }
 }
