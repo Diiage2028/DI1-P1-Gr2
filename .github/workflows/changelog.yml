@@ -31,6 +31,14 @@ jobs:
         with:
           dotnet-version: '9.x'
 
+      - name: Install EF Tools
+        run: |
+          dotnet tool install --global dotnet-ef
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore
+          
       - name: Install release tools
         run: |
           npm install -g semantic-release @semantic-release/changelog @semantic-release/git conventional-changelog-cli

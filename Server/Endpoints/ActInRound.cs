@@ -47,7 +47,7 @@ public class ActInRound : IEndpoint
             RoundActionType.ParticipateInCallForTenders => JsonSerializer.Deserialize<ParticipateInCallForTendersPayload>(body.ActionPayload),
             RoundActionType.RecruitAConsultant => JsonSerializer.Deserialize<RecruitAConsultantPayload>(body.ActionPayload),
             RoundActionType.FireAnEmployee => JsonSerializer.Deserialize<FireAnEmployeePayload>(body.ActionPayload),
-            RoundActionType.PassMyTurn => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload),
+            RoundActionType.ConfirmRound => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload),
             _ => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload)
         };
 

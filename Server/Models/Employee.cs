@@ -2,13 +2,13 @@ using Server.Hubs.Records;
 
 namespace Server.Models;
 
-public class Employee(string name, int companyId, int gameId, int salary)
+public class Employee(string name, int companyId, int gameId, double salary)
 {
     public int? Id { get; private set; }
 
     public string Name { get; set; } = name;
 
-    public int Salary { get; set; } = salary;
+    public double Salary { get; set; } = salary;
 
     public ICollection<LeveledSkill> Skills { get; } = [];
 
