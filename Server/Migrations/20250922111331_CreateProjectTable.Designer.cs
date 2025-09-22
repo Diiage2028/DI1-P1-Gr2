@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Persistence;
@@ -11,9 +12,11 @@ using Server.Persistence;
 namespace Server.Migrations
 {
     [DbContext(typeof(WssDbContext))]
-    partial class WssDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250922111331_CreateProjectTable")]
+    partial class CreateProjectTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,7 +184,7 @@ namespace Server.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("projects", (string)null);
+                    b.ToTable("project", (string)null);
                 });
 
             modelBuilder.Entity("Server.Models.Round", b =>
@@ -458,7 +461,7 @@ namespace Server.Migrations
 
                             b1.HasKey("ProjectId", "Id");
 
-                            b1.ToTable("projects");
+                            b1.ToTable("project");
 
                             b1.ToJson("Skills");
 

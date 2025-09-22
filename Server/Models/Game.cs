@@ -24,6 +24,7 @@ public class Game(string name, int rounds = 15)
     public ICollection<Round> RoundsCollection { get; } = [];
 
     public ICollection<Consultant> Consultants { get; } = [];
+    public ICollection<Project> Projects { get; } = [];
 
     public bool CanBeJoined()
     {
@@ -48,7 +49,8 @@ public class Game(string name, int rounds = 15)
             Id is null ? 0 : (int) Id, Name, Players.Select(p => p.ToOverview()).ToList(),
             Players.Count, 3, Rounds, RoundsCollection.Count,
             Status.ToString(), RoundsCollection.Select(r => r.ToOverview()).ToList(),
-            Consultants.Select(c => c.ToOverview()).ToList()
+            Consultants.Select(c => c.ToOverview()).ToList(),
+            Projects.Select(c => c.ToOverview()).ToList()
         );
     }
 }

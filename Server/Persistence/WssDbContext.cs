@@ -80,6 +80,20 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.OwnsMany(e => e.Skills, builder => builder.ToJson());
         });
 
+        modelBuilder.Entity<Project>(e =>
+        {
+            e.ToTable("projects");
+            e.HasKey(e => e.Id);
+            e.Property(e => e.Name).HasColumnType("varchar(255)");
+            e.Property(e => e.Rounds).HasColumnType("integer");
+            e.Property(e => e.Earnings).HasColumnType("float");
+            e.HasOne(e => e.Game)
+                .WithMany()
+                .HasForeignKey(e => e.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.OwnsMany(e => e.Skills, builder => builder.ToJson());
+        });
+
         modelBuilder.Entity<Game>(e =>
         {
             e.ToTable("games");
@@ -97,6 +111,9 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
                 .WithOne(e => e.Game)
                 .HasForeignKey(e => e.GameId);
             e.HasMany(e => e.RoundsCollection)
+                .WithOne(e => e.Game)
+                .HasForeignKey(e => e.GameId);
+            e.HasMany(e => e.Projects) // Foreign key with Project table
                 .WithOne(e => e.Game)
                 .HasForeignKey(e => e.GameId);
         });
