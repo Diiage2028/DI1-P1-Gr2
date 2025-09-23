@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Persistence;
@@ -11,13 +12,15 @@ using Server.Persistence;
 namespace Server.Migrations
 {
     [DbContext(typeof(WssDbContext))]
-    partial class WssDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919093134_RemoveConsultants")]
+    partial class RemoveConsultants
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -63,7 +66,7 @@ namespace Server.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("text");
 
                     b.Property<int>("SalaryRequirement")
                         .HasColumnType("integer");
@@ -72,7 +75,7 @@ namespace Server.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("consultants", (string)null);
+                    b.ToTable("Consultant");
                 });
 
             modelBuilder.Entity("Server.Models.Employee", b =>
@@ -315,35 +318,7 @@ namespace Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("Server.Models.LeveledSkill", "Skills", b1 =>
-                        {
-                            b1.Property<int>("ConsultantId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Level")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("ConsultantId", "Id");
-
-                            b1.ToTable("consultants");
-
-                            b1.ToJson("Skills");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ConsultantId");
-                        });
-
                     b.Navigation("Game");
-
-                    b.Navigation("Skills");
                 });
 
             modelBuilder.Entity("Server.Models.Employee", b =>

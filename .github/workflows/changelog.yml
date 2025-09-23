@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   release:
@@ -25,11 +26,49 @@ jobs:
         with:
           node-version: "lts/*"
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Install EF Tools
+        run: |
+          dotnet tool install --global dotnet-ef
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore
+          
       - name: Install release tools
         run: |
           npm install -g semantic-release @semantic-release/changelog @semantic-release/git conventional-changelog-cli
 
-      - name: Release
+      - name: Build & publish server and client for all platforms
+        run: |
+          mkdir -p release_artifacts
+
+          # Build server for all platforms
+          dotnet publish ./Server/Server.csproj -c Release -r win-x64 --self-contained true -o release_artifacts/server-win
+          dotnet publish ./Server/Server.csproj -c Release -r linux-x64 --self-contained true -o release_artifacts/server-linux
+          dotnet publish ./Server/Server.csproj -c Release -r osx-x64 --self-contained true -o release_artifacts/server-osx
+
+          # Build client (TUI) for all platforms
+          dotnet publish ./Client/Client.csproj -c Release -r win-x64 --self-contained true -o release_artifacts/client-win
+          dotnet publish ./Client/Client.csproj -c Release -r linux-x64 --self-contained true -o release_artifacts/client-linux
+          dotnet publish ./Client/Client.csproj -c Release -r osx-x64 --self-contained true -o release_artifacts/client-osx
+
+      - name: Zip Artifacts
+        run: |
+          cd release_artifacts
+          zip -r server-win-x64.zip server-win
+          zip -r server-linux-x64.zip server-linux
+          zip -r server-osx-x64.zip server-osx
+          zip -r client-win-x64.zip client-win
+          zip -r client-linux-x64.zip client-linux
+          zip -r client-osx-x64.zip client-osx
+          cd ..
+
+      - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: npx semantic-release --no-ci

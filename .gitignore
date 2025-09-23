@@ -120,3 +120,7 @@ src/.vs/config/applicationhost.config
 
 # MacOS
 .DS_Store
+
+
+# Build Folders
+release_artifacts/
