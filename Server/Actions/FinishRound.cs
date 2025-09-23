@@ -7,8 +7,6 @@ using Server.Hubs.Contracts;
 using Server.Models;
 using Server.Persistence.Contracts;
 
-using static Server.Models.GenerateNewConsultantRoundAction;
-
 namespace Server.Actions;
 
 public sealed record FinishRoundParams(int? RoundId = null, Round? Round = null);

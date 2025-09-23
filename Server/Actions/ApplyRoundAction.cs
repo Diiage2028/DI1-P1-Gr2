@@ -1,10 +1,5 @@
-
-using System.Text.Json.Nodes;
-
 using FluentResults;
-
 using FluentValidation;
-
 using Server.Actions.Contracts;
 using Server.Hubs.Contracts;
 using Server.Models;
@@ -30,8 +25,9 @@ public class ApplyRoundActionValidator : AbstractValidator<ApplyRoundActionParam
 
 public class ApplyRoundAction(
     IGamesRepository gamesRepository,
-    IGameHubService gameHubService
-) : IAction<ApplyRoundActionParams, Result>
+    ICompaniesRepository companiesRepository,
+    IAction<CreateEmployeeParams, Result<Employee>> createEmployeeAction
+        ) : IAction<ApplyRoundActionParams, Result>
 {
     public async Task<Result> PerformAsync(ApplyRoundActionParams actionParams)
     {
@@ -43,7 +39,7 @@ public class ApplyRoundAction(
             return Result.Fail(actionValidationResult.Errors.Select(e => e.ErrorMessage));
         }
 
-        var (action, gameId, game) = actionParams;
+        var (roundAction, gameId, game) = actionParams;
 
         game ??= await gamesRepository.GetById(gameId!.Value);
 
@@ -52,28 +48,29 @@ public class ApplyRoundAction(
             return Result.Fail($"Game with Id \"{gameId}\" not found.");
         }
 
-        // Fix: Use the Type property and enum values instead of class types
-        switch (action)
+        if (roundAction.PlayerId == null)
         {
-            case SendEmployeeForTraining:
-                await HandleSendEmployeeForTraining((SendEmployeeForTrainingRoundAction)roundAction, game);
-                break;
-            case RoundActionType.ParticipateInProject:
-                await HandleParticipateInProject((ParticipateInProjectRoundAction)roundAction, game);
-                break;
-            case RoundActionType.EnrollInFormation:
-                await HandleEnrollInFormation((EnrollInFormationRoundAction)roundAction, game);
-                break;
-            case RoundActionType.FireAnEmployee:
-                await HandleFireAnEmployee((FireAnEmployeeRoundAction)roundAction, game);
-                break;
-            case RoundActionType.ConfirmRound:
-                await HandleConfirmRound((ConfirmRoundAction)roundAction, game);
-                break;
-            default:
-                return Result.Fail($"Unsupported action type: {roundAction.Type}");
+            return Result.Fail("PlayerId is required for round action.");
         }
 
-        return Result.Ok();
+        var company = await companiesRepository.GetByPlayerId((int)roundAction.PlayerId);
+
+        // Apply the specific round action based on type
+        Result result;
+        switch (roundAction)
+        {
+            case EnrollEmployeeRoundAction enrollEmployeeAction:
+                var createParams = new CreateEmployeeParams("John Smith", Company: company);
+                var createResult = await createEmployeeAction.PerformAsync(createParams);
+                result = createResult.IsSuccess
+                    ? Result.Ok()
+                    : Result.Fail(createResult.Errors);
+                break;
+            default:
+                result = Result.Fail($"Unknown round action type: {roundAction.Type}");
+                break;
+        }
+
+        return result;
     }
 }

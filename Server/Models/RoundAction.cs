@@ -7,7 +7,7 @@ public enum RoundActionType
 {
     SendEmployeeForTraining,
     ParticipateInProject,
-    EnrollInFormation,
+    EnrollEmployee,
     FireAnEmployee,
     ConfirmRound,
 }
@@ -15,7 +15,7 @@ public enum RoundActionType
 [JsonDerivedType(typeof(RoundAction), typeDiscriminator: "DEFAULT")]
 [JsonDerivedType(typeof(SendEmployeeForTrainingRoundAction), typeDiscriminator: "SendEmployeeForTraining")] // Added this line
 [JsonDerivedType(typeof(ParticipateInProjectRoundAction), typeDiscriminator: "ParticipateInProject")]
-[JsonDerivedType(typeof(EnrollInFormationRoundAction), typeDiscriminator: "EnrollInFormation")]
+[JsonDerivedType(typeof(EnrollEmployeeRoundAction), typeDiscriminator: "EnrollEmployee")]
 [JsonDerivedType(typeof(FireAnEmployeeRoundAction), typeDiscriminator: "FireAnEmployee")]
 [JsonDerivedType(typeof(ConfirmRoundAction), typeDiscriminator: "ConfirmRound")]
 public class RoundAction(int? playerId)
@@ -28,7 +28,7 @@ public class RoundAction(int? playerId)
         {
             RoundActionType.SendEmployeeForTraining => new SendEmployeeForTrainingRoundAction(playerId),
             RoundActionType.ParticipateInProject => new ParticipateInProjectRoundAction(playerId),
-            RoundActionType.EnrollInFormation => new EnrollInFormationRoundAction(playerId),
+            RoundActionType.EnrollEmployee => new EnrollEmployeeRoundAction(playerId),
             RoundActionType.FireAnEmployee => new FireAnEmployeeRoundAction(playerId),
             RoundActionType.ConfirmRound => new ConfirmRoundAction(playerId),
             _ => new RoundAction(playerId), // Changed to base class
@@ -91,21 +91,21 @@ public class ParticipateInProjectRoundAction(int? playerId) : RoundAction(player
     protected override RoundActionType GetActionType() => RoundActionType.ParticipateInProject;
 }
 
-public class EnrollInFormationRoundAction(int? playerId) : RoundAction(playerId)
+public class EnrollEmployeeRoundAction(int? playerId) : RoundAction(playerId)
 {
-    public class EnrollInFormationRoundPayload : RoundActionPayload
+    public class EnrollEmployeeRoundPayload : RoundActionPayload
     {
-        public int FormationId { get; init; }
+        public int EmployeeId { get; init; }
     }
 
-    public EnrollInFormationRoundPayload Payload { get; private set; } = null!;
+    public EnrollEmployeeRoundPayload Payload { get; private set; } = null!;
 
     protected override void ApplyPayload(RoundActionPayload payload)
     {
-        Payload = (EnrollInFormationRoundPayload)payload;
+        Payload = (EnrollEmployeeRoundPayload)payload;
     }
 
-    protected override RoundActionType GetActionType() => RoundActionType.EnrollInFormation;
+    protected override RoundActionType GetActionType() => RoundActionType.EnrollEmployee;
 }
 
 public class FireAnEmployeeRoundAction(int? playerId) : RoundAction(playerId)

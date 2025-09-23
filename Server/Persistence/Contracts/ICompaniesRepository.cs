@@ -8,4 +8,5 @@ public interface ICompaniesRepository
     Task<bool> CompanyExists(int companyId);
     Task<Company?> GetById(int companyId);
     Task SaveCompany(Company company);
+    Task<Company?> GetByPlayerId(int playerId);
 }
