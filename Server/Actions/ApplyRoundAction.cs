@@ -1,12 +1,5 @@
-
-using System.Text.Json.Nodes;
-
 using FluentResults;
-
 using FluentValidation;
-
-using Microsoft.AspNetCore.SignalR;
-
 using Server.Actions.Contracts;
 using Server.Hubs.Contracts;
 using Server.Models;
@@ -32,8 +25,9 @@ public class ApplyRoundActionValidator : AbstractValidator<ApplyRoundActionParam
 
 public class ApplyRoundAction(
     IGamesRepository gamesRepository,
-    IGameHubService gameHubService
-) : IAction<ApplyRoundActionParams, Result>
+    ICompaniesRepository companiesRepository,
+    IAction<CreateEmployeeParams, Result<Employee>> createEmployeeAction
+        ) : IAction<ApplyRoundActionParams, Result>
 {
     public async Task<Result> PerformAsync(ApplyRoundActionParams actionParams)
     {
@@ -45,7 +39,7 @@ public class ApplyRoundAction(
             return Result.Fail(actionValidationResult.Errors.Select(e => e.ErrorMessage));
         }
 
-        var (action, gameId, game) = actionParams;
+        var (roundAction, gameId, game) = actionParams;
 
         game ??= await gamesRepository.GetById(gameId!.Value);
 
@@ -54,10 +48,29 @@ public class ApplyRoundAction(
             return Result.Fail($"Game with Id \"{gameId}\" not found.");
         }
 
-        // @todo: Implement the logic for applying the round action
-        Console.WriteLine(JsonObject.Parse(action.ToString() ?? "{}")!.ToJsonString());
+        if (roundAction.PlayerId == null)
+        {
+            return Result.Fail("PlayerId is required for round action.");
+        }
 
-        await gameHubService.UpdateCurrentGame(gameId: gameId);
-        return Result.Ok();
+        var company = await companiesRepository.GetByPlayerId((int)roundAction.PlayerId);
+
+        // Apply the specific round action based on type
+        Result result;
+        switch (roundAction)
+        {
+            case EnrollEmployeeRoundAction enrollEmployeeAction:
+                var createParams = new CreateEmployeeParams("John Smith", Company: company);
+                var createResult = await createEmployeeAction.PerformAsync(createParams);
+                result = createResult.IsSuccess
+                    ? Result.Ok()
+                    : Result.Fail(createResult.Errors);
+                break;
+            default:
+                result = Result.Fail($"Unknown round action type: {roundAction.Type}");
+                break;
+        }
+
+        return result;
     }
 }

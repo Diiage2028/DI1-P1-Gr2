@@ -770,7 +770,7 @@ public class CurrentGameActionList : ListView
     {
         SendEmployeeForTraining,
         ParticipateInProject,
-        EnrollInFormation,
+        EnrollEmployee,
         FireAnEmployee,
         ConfirmRound
     }
@@ -778,7 +778,7 @@ public class CurrentGameActionList : ListView
     private readonly CurrentGameActionListDataSource Actions = [
         Action.SendEmployeeForTraining,
         Action.ParticipateInProject,
-        Action.EnrollInFormation,
+        Action.EnrollEmployee,
         Action.FireAnEmployee,
         Action.ConfirmRound
     ];
@@ -817,7 +817,7 @@ public class CurrentGameActionListDataSource : List<CurrentGameActionList.Action
             case (int) CurrentGameActionList.Action.ParticipateInProject:
                 driver.AddStr("Participate In Project");
                 break;
-            case (int) CurrentGameActionList.Action.EnrollInFormation:
+            case (int) CurrentGameActionList.Action.EnrollEmployee:
                 driver.AddStr("Enroll In Formation");
                 break;
             case (int) CurrentGameActionList.Action.FireAnEmployee:

@@ -7,8 +7,6 @@ using Server.Hubs.Contracts;
 using Server.Models;
 using Server.Persistence.Contracts;
 
-using static Server.Models.GenerateNewConsultantRoundAction;
-
 namespace Server.Actions;
 
 public sealed record FinishRoundParams(int? RoundId = null, Round? Round = null);
@@ -49,22 +47,6 @@ public class FinishRound(
             return Result.Fail($"Round with Id \"{roundId}\" not found.");
         }
 
-        var rnd = new Random();
-
-        var newConsultantShouldBeGenerated = rnd.Next(2) == 1;
-
-        if (newConsultantShouldBeGenerated)
-        {
-            var action = RoundAction.CreateForType(
-                RoundActionType.GenerateNewConsultant,
-                0,
-                new GenerateNewConsultantPayload { GameId = round.GameId }
-            );
-
-            round.Actions.Add(action);
-
-            await roundsRepository.SaveRound(round);
-        }
 
         foreach (var action in round.Actions)
         {

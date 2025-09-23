@@ -11,8 +11,6 @@ using Server.Models;
 using Server.Persistence;
 
 using static Server.Models.FireAnEmployeeRoundAction;
-using static Server.Models.ParticipateInCallForTendersRoundAction;
-using static Server.Models.RecruitAConsultantRoundAction;
 using static Server.Models.RoundAction;
 using static Server.Models.SendEmployeeForTrainingRoundAction;
 
@@ -44,8 +42,6 @@ public class ActInRound : IEndpoint
         var parsedActionPayload = parsedActionType switch
         {
             RoundActionType.SendEmployeeForTraining => JsonSerializer.Deserialize<SendEmployeeForTrainingPayload>(body.ActionPayload),
-            RoundActionType.ParticipateInCallForTenders => JsonSerializer.Deserialize<ParticipateInCallForTendersPayload>(body.ActionPayload),
-            RoundActionType.RecruitAConsultant => JsonSerializer.Deserialize<RecruitAConsultantPayload>(body.ActionPayload),
             RoundActionType.FireAnEmployee => JsonSerializer.Deserialize<FireAnEmployeePayload>(body.ActionPayload),
             RoundActionType.ConfirmRound => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload),
             _ => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload)
