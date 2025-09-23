@@ -5,8 +5,6 @@ using FluentResults;
 
 using FluentValidation;
 
-using Microsoft.AspNetCore.SignalR;
-
 using Server.Actions.Contracts;
 using Server.Hubs.Contracts;
 using Server.Models;
@@ -54,10 +52,28 @@ public class ApplyRoundAction(
             return Result.Fail($"Game with Id \"{gameId}\" not found.");
         }
 
-        // @todo: Implement the logic for applying the round action
-        Console.WriteLine(JsonObject.Parse(action.ToString() ?? "{}")!.ToJsonString());
+        // Fix: Use the Type property and enum values instead of class types
+        switch (action)
+        {
+            case SendEmployeeForTraining:
+                await HandleSendEmployeeForTraining((SendEmployeeForTrainingRoundAction)roundAction, game);
+                break;
+            case RoundActionType.ParticipateInProject:
+                await HandleParticipateInProject((ParticipateInProjectRoundAction)roundAction, game);
+                break;
+            case RoundActionType.EnrollInFormation:
+                await HandleEnrollInFormation((EnrollInFormationRoundAction)roundAction, game);
+                break;
+            case RoundActionType.FireAnEmployee:
+                await HandleFireAnEmployee((FireAnEmployeeRoundAction)roundAction, game);
+                break;
+            case RoundActionType.ConfirmRound:
+                await HandleConfirmRound((ConfirmRoundAction)roundAction, game);
+                break;
+            default:
+                return Result.Fail($"Unsupported action type: {roundAction.Type}");
+        }
 
-        await gameHubService.UpdateCurrentGame(gameId: gameId);
         return Result.Ok();
     }
 }

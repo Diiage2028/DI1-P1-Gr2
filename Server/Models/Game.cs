@@ -6,7 +6,8 @@ public enum GameStatus
 {
     Waiting,
     InProgress,
-    Finished
+    Finished,
+    Aborted
 }
 
 public class Game(string name, int rounds = 15)
