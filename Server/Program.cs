@@ -54,6 +54,22 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<WssDbContext>();
         context.Database.Migrate(); // This applies pending migrations
+        // Update games that are not Finished or Exited to Exit status
+        var gamesToUpdate = context.Games
+            .Where(g => g.Status != GameStatus.Finished && g.Status != GameStatus.Aborted)
+            .ToList();
+
+        if (gamesToUpdate.Any())
+        {
+            foreach (var game in gamesToUpdate)
+            {
+                game.Status = GameStatus.Aborted;
+            }
+
+            context.SaveChanges();
+            Console.WriteLine($"Updated {gamesToUpdate.Count} games to Exit status.");
+        }
+
         Console.WriteLine("Database migrations applied successfully.");
     }
     catch (Exception ex)
