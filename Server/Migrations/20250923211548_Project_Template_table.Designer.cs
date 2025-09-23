@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Persistence;
@@ -11,9 +12,11 @@ using Server.Persistence;
 namespace Server.Migrations
 {
     [DbContext(typeof(WssDbContext))]
-    partial class WssDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250923211548_Project_Template_table")]
+    partial class Project_Template_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,7 +86,7 @@ namespace Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
-                    b.Property<int?>("CompanyId")
+                    b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<int>("GameId")
@@ -93,13 +96,8 @@ namespace Server.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-<<<<<<< HEAD
-                    b.Property<decimal>("Salary")
-                        .HasColumnType("numeric");
-=======
                     b.Property<double>("Salary")
                         .HasColumnType("double precision");
->>>>>>> 36f59c3 (edit col name project)
 
                     b.HasKey("Id");
 
@@ -497,7 +495,8 @@ namespace Server.Migrations
                     b.HasOne("Server.Models.Company", "Company")
                         .WithMany("Employees")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Server.Models.Game", "Game")
                         .WithMany()

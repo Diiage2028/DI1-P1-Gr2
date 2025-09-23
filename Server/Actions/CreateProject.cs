@@ -12,7 +12,7 @@ using Server.Persistence.Contracts;
 
 namespace Server.Actions;
 
-public sealed record CreateProjectsParams(string ProjectName, int? GameId = null, Game? Game = null);
+public sealed record CreateProjectsParams(int TemplateId, int? GameId = null, Game? Game = null);
 
 // Validator that defines rules for CreateEmployeeParams using FluentValidation.
 public class CreateProjectValidator : AbstractValidator<CreateProjectsParams>
@@ -20,7 +20,7 @@ public class CreateProjectValidator : AbstractValidator<CreateProjectsParams>
     public CreateProjectValidator()
     {
         // Project name must not be empty
-        RuleFor(p => p.ProjectName).NotEmpty();
+        RuleFor(p => p.TemplateId).NotEmpty();
 
         // If no Game object is provided, GameId must be provided
         RuleFor(p => p.GameId).NotEmpty().When(p => p.Game is null);
@@ -33,7 +33,7 @@ public class CreateProjectValidator : AbstractValidator<CreateProjectsParams>
 // Action of creating a project with dependency injection
 public class CreateProject(
     IProjectsRepository projectsRepository,   // Access project data
-    ISkillsRepository skillsRepository,       // Retrieve skills
+    // ISkillsRepository skillsRepository,       // Retrieve skills
     IGamesRepository gamesRepository,
     IGameHubService gameHubService            // Notify clients via SignalR
 ) : IAction<CreateProjectsParams, Result<Project>>
@@ -62,47 +62,10 @@ public class CreateProject(
             return Result.Fail($"Game with Id \"{gameId}\" not found.");
         }
 
-        // List of names that will be picked randomly for the project
-        IEnumerable<string> name =
-        [
-            "Web app",
-            "Mini game job hunting turn by turn",
-            "E-commerce platform",
-            "Mobile banking app",
-            "Inventory management system",
-            "Social networking site",
-            "Online booking system",
-            "Chatbot assistant",
-            "Learning management system",
-            "IoT smart home dashboard",
-            "Data visualization tool",
-            "Cloud file storage service"
-        ];
-        var index = rnd.Next(name.Count()); // random number between 0 and Count-1
-        string randomName = name.ElementAt(index);
-
-        var randomRounds = rnd.Next(1, 7);
-
-        // Create the amount for the reward of the projects from a list
-        IEnumerable<int> reward = [];
-
-        for (var amount = 90000; amount <= 25000; amount += 500)
-        {
-            reward = reward.Append(amount);
-        }
-        var randomReward = reward.ToList()[rnd.Next(reward.Count() - 1)];
+        var randomTemplateId = rnd.Next(1, 11);
 
         // Create new project
-        var project = new Project(randomName, (int) game!.Id!, randomRounds, randomReward);
-
-        // Fetch 3 random skills from repository
-        var randomSkills = await skillsRepository.GetRandomSkills(3);
-
-        // Assign each skill to the project with a random level (0–10)
-        foreach (var randomSkill in randomSkills)
-        {
-            project.Skills.Add(new LeveledSkill(randomSkill.Name, rnd.Next(11)));
-        }
+        var project = new Project((int) game!.Id!, randomTemplateId);
 
         // Save project in repository
         await projectsRepository.SaveProject(project);
