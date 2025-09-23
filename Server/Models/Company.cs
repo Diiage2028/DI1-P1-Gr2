@@ -17,12 +17,14 @@ public class Company(string name, int playerId) //Constructor, when we create a 
     public int Treasury { get; set; } = 1000000;
 
     public ICollection<Employee> Employees { get; } = []; // convention: creates instance of a list
+    public ICollection<Project> Projects { get; } = []; // convention: creates instance of a list
 
     public CompanyOverview ToOverview()
     {
         return new CompanyOverview(
             Id is null ? 0 : (int) Id, Name,
-            Treasury, Employees.Select(e => e.ToOverview()).ToList()
+            Treasury, Employees.Select(e => e.ToOverview()).ToList(),
+            Projects.Select(e => e.ToOverview()).ToList()
         );
     }
 }

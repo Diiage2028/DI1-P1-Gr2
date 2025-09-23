@@ -30,7 +30,8 @@ public sealed record CompanyOverview(
     int Id,
     string Name,
     int Treasury,
-    ICollection<EmployeeOverview> Employees
+    ICollection<EmployeeOverview> Employees,
+    ICollection<ProjectsOverview> Projects 
 );
 
 public record ConsultantOverview(
@@ -51,8 +52,8 @@ public sealed record ProjectsOverview(
     int Id,
     string Name,
     int Rounds,
-    double Reward,
-    ICollection<SkillOverview> Skills
+    double Reward
+    // ICollection<SkillOverview> Skills
 );
 
 public sealed record SkillOverview(

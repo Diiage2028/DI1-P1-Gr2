@@ -38,7 +38,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
         modelBuilder.Entity<Company>(e =>
         {
             e.ToTable("companies");
-            e.HasKey(e => e.Id); 
+            e.HasKey(e => e.Id);
             e.Property(e => e.Name).HasColumnType("varchar(255)");
             e.Property(e => e.Treasury).HasColumnType("integer").HasDefaultValue(1000000); // Default value
             e.HasOne(e => e.Player)
@@ -47,6 +47,9 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade); // if delete player, company gets deleted
             e.HasMany(e => e.Employees)
+                .WithOne(e => e.Company)
+                .HasForeignKey(e => e.CompanyId);
+            e.HasMany(e => e.Projects)
                 .WithOne(e => e.Company)
                 .HasForeignKey(e => e.CompanyId);
         });
@@ -80,18 +83,47 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.OwnsMany(e => e.Skills, builder => builder.ToJson());
         });
 
+        // Project (template)
+        modelBuilder.Entity<ProjectTemplate>(e =>
+        {
+            e.ToTable("project_templates");
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Name).HasColumnType("varchar(255)");
+            e.Property(p => p.Rounds).HasColumnType("integer");
+            e.Property(p => p.Reward).HasColumnType("integer");
+            e.HasData(
+                new ProjectTemplate("Web app", 6, 30000) { Id = 1 },
+                new ProjectTemplate("Mini game job hunting turn by turn", 2, 45000) { Id = 2 },
+                new ProjectTemplate("E-commerce platform", 4, 80000) { Id = 3 },
+                new ProjectTemplate("Mobile banking app", 1, 70000) { Id = 4 },
+                new ProjectTemplate("Inventory management system", 5, 65000) { Id = 5 },
+                new ProjectTemplate("Social networking site", 3, 90000) { Id = 6 },
+                new ProjectTemplate("Online booking system", 6, 55000) { Id = 7 },
+                new ProjectTemplate("Chatbot assistant", 2, 30000) { Id = 8 },
+                new ProjectTemplate("Learning management system", 1, 60000) { Id = 9 },
+                new ProjectTemplate("IoT smart home dashboard", 4, 75000) { Id = 10 },
+                new ProjectTemplate("Data visualization tool", 5, 40000) { Id = 11 },
+                new ProjectTemplate("Cloud file storage service", 3, 50000) { Id = 12 }
+            );
+        });
+
+        // ProjectInstance (runtime projects tied to a game & company)
         modelBuilder.Entity<Project>(e =>
         {
             e.ToTable("projects");
-            e.HasKey(e => e.Id);
-            e.Property(e => e.Name).HasColumnType("varchar(255)");
-            e.Property(e => e.Rounds).HasColumnType("integer");
-            e.Property(e => e.Reward).HasColumnType("float");
-            e.HasOne(e => e.Game)
-                .WithMany()
-                .HasForeignKey(e => e.GameId)
+            e.HasKey(pi => pi.Id);
+            e.HasOne(pi => pi.Template)
+                .WithMany() // A template can have many instances
+                .HasForeignKey(pi => pi.TemplateId)
                 .OnDelete(DeleteBehavior.Cascade);
-            e.OwnsMany(e => e.Skills, builder => builder.ToJson());
+            e.HasOne(pi => pi.Company)
+                .WithMany(c => c.Projects)
+                .HasForeignKey(pi => pi.CompanyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(pi => pi.Game)
+                .WithMany(c => c.Projects)
+                .HasForeignKey(pi => pi.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Game>(e =>
