@@ -64,16 +64,16 @@ public class CreateEmployee(
             employee.Skills.Add(new LeveledSkill(randomSkill.Name, skillLevel));
         }
 
-        // Calculate salary based on skill levels: 150 * skill level * 1.02 for each skill
-        double totalSalary = 0;
-        // foreach (var skill in employee.Skills)
-        // {
-        //     totalSalary += 20.0 * skill.Level * 1.02;
-        // }
+        decimal totalSalary;
 
-        // New formula: 200 * number of skills * average skill level * (1 - random factor up to 10%)
-        totalSalary = 200 * employee.Skills.Count * employee.Skills.Average(s => s.Level) * (1 - rnd.NextDouble() * 0.1);
-
+        if (employee.Skills.Count == 0)
+        {
+            return Result.Fail("No skills available to compute salary.");
+        }
+        // New formula: baseFactor * count * avgLevel * (1 - random up to 10%)
+        const double baseFactor = 200;
+        var avgLevel = employee.Skills.Average(s => s.Level);
+        totalSalary = new decimal(baseFactor * employee.Skills.Count * avgLevel * (1 - rnd.NextDouble() * 0.1));
         // Set the calculated salary
         employee.Salary = totalSalary;
 
