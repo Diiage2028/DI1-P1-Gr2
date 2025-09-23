@@ -10,7 +10,8 @@ public sealed record GameOverview(
     int CurrentRound,
     string Status,
     ICollection<RoundOverview> Rounds,
-    ICollection<ConsultantOverview> Consultants
+    ICollection<ConsultantOverview> Consultants,
+    ICollection<ProjectsOverview> Projects
 );
 
 public sealed record PlayerOverview(
@@ -23,7 +24,8 @@ public sealed record CompanyOverview(
     int Id,
     string Name,
     int Treasury,
-    ICollection<EmployeeOverview> Employees
+    ICollection<EmployeeOverview> Employees,
+    ICollection<ProjectsOverview> Projects
 );
 
 public record ConsultantOverview(
@@ -54,4 +56,12 @@ public sealed record RoundActionOverview(
     string ActionType,
     string Payload,
     int PlayerId
+);
+
+public sealed record ProjectsOverview(
+    int Id,
+    string Name,
+    int Rounds,
+    double reward
+    // ICollection<SkillOverview> Skills
 );

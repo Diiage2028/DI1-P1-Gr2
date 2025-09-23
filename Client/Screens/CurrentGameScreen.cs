@@ -638,6 +638,9 @@ public class CurrentGameCompanyView : CurrentGameView
 
         var projectsData = new List<TreeNode>();
 
+        //get id from game, select * projects with id
+
+
         // if (Game.Projects != null)
         // {
         //     foreach (var project in Game.Projects.ToList())
