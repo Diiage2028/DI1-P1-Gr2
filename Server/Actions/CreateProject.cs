@@ -83,17 +83,17 @@ public class CreateProject(
 
         var randomRounds = rnd.Next(1, 7);
 
-        // Create the amount for the earnings of the projects from a list
-        IEnumerable<int> earnings = [];
+        // Create the amount for the reward of the projects from a list
+        IEnumerable<int> reward = [];
 
         for (var amount = 90000; amount <= 25000; amount += 500)
         {
-            earnings = earnings.Append(amount);
+            reward = reward.Append(amount);
         }
-        var randomEarnings = earnings.ToList()[rnd.Next(earnings.Count() - 1)];
+        var randomReward = reward.ToList()[rnd.Next(reward.Count() - 1)];
 
         // Create new project
-        var project = new Project(randomName, (int) game!.Id!, randomRounds, randomEarnings);
+        var project = new Project(randomName, (int) game!.Id!, randomRounds, randomReward);
 
         // Fetch 3 random skills from repository
         var randomSkills = await skillsRepository.GetRandomSkills(3);

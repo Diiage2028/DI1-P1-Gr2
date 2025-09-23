@@ -51,7 +51,7 @@ public sealed record ProjectsOverview(
     int Id,
     string Name,
     int Rounds,
-    double Earnings,
+    double Reward,
     ICollection<SkillOverview> Skills
 );
 

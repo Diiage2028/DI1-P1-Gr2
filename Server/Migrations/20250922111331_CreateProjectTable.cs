@@ -20,7 +20,7 @@ namespace Server.Migrations
                     Name = table.Column<string>(type: "varchar(255)", nullable: false),
                     GameId = table.Column<int>(type: "integer", nullable: false),
                     Rounds = table.Column<int>(type: "integer", nullable: false),
-                    Earnings = table.Column<double>(type: "float", nullable: false),
+                    Reward = table.Column<double>(type: "float", nullable: false),
                     Skills = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>

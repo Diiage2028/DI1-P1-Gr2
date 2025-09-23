@@ -93,8 +93,13 @@ namespace Server.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+<<<<<<< HEAD
                     b.Property<decimal>("Salary")
                         .HasColumnType("numeric");
+=======
+                    b.Property<double>("Salary")
+                        .HasColumnType("double precision");
+>>>>>>> 36f59c3 (edit col name project)
 
                     b.HasKey("Id");
 
@@ -164,15 +169,15 @@ namespace Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
-                    b.Property<double>("Earnings")
-                        .HasColumnType("float");
-
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<double>("Reward")
+                        .HasColumnType("float");
 
                     b.Property<int>("Rounds")
                         .HasColumnType("integer");
