@@ -86,7 +86,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.HasKey(e => e.Id);
             e.Property(e => e.Name).HasColumnType("varchar(255)");
             e.Property(e => e.Rounds).HasColumnType("integer");
-            e.Property(e => e.Earnings).HasColumnType("float");
+            e.Property(e => e.Reward).HasColumnType("float");
             e.HasOne(e => e.Game)
                 .WithMany()
                 .HasForeignKey(e => e.GameId)

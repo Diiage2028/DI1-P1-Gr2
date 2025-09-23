@@ -167,7 +167,7 @@ namespace Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
-                    b.Property<double>("Earnings")
+                    b.Property<double>("Reward")
                         .HasColumnType("float");
 
                     b.Property<int>("GameId")
