@@ -9,7 +9,7 @@ using Server.Persistence.Contracts;
 
 namespace Server.Actions;
 
-public sealed record CreateGameParams(string GameName, string PlayerName, string CompanyName, int Rounds = 15);
+public sealed record CreateGameParams(string GameName, string PlayerName, string CompanyName, int Rounds = 5);
 
 public class CreateGameValidator : AbstractValidator<CreateGameParams>
 {
@@ -18,7 +18,7 @@ public class CreateGameValidator : AbstractValidator<CreateGameParams>
         RuleFor(p => p.GameName).NotEmpty();
         RuleFor(p => p.PlayerName).NotEmpty();
         RuleFor(p => p.CompanyName).NotEmpty();
-        RuleFor(p => p.Rounds).NotNull().GreaterThanOrEqualTo(15);
+        RuleFor(p => p.Rounds).NotNull().InclusiveBetween(5, 20).WithMessage("Rounds must be between 5 and 20.");
     }
 }
 
