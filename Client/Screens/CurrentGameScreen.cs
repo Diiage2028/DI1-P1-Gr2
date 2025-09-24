@@ -576,7 +576,7 @@ public class CurrentGameCompanyView : CurrentGameView
     {
         Employees = new()
         {
-            Title = "Employees",
+            Title = "Employees to hire",
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
@@ -818,7 +818,7 @@ public class CurrentGameActionListDataSource : List<CurrentGameActionList.Action
                 driver.AddStr("Participate In Project");
                 break;
             case (int) CurrentGameActionList.Action.EnrollInFormation:
-                driver.AddStr("Enroll In Formation");
+                driver.AddStr("Hire employee");
                 break;
             case (int) CurrentGameActionList.Action.FireAnEmployee:
                 driver.AddStr("Fire An Employee");
