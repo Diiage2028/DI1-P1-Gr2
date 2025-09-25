@@ -24,6 +24,7 @@ public class CreateGameValidator : AbstractValidator<CreateGameParams>
 
 public class CreateGame(
   IGamesRepository gamesRepository,
+//   IProjectsRepository projectsRepository,
   IAction<CreatePlayerParams, Result<Player>> createPlayerAction,
   IMainHubService mainHubService
 ) : IAction<CreateGameParams, Result<Game>>
@@ -59,7 +60,12 @@ public class CreateGame(
             return Result.Fail(createPlayerResult.Errors);
         }
 
+
+        // // Notify clients that the game state has changed
+        // await gameHubService.UpdateCurrentGame(gameId: company.Player.GameId);
+
         await mainHubService.UpdateJoinableGamesList();
+        
 
         return Result.Ok(game);
     }

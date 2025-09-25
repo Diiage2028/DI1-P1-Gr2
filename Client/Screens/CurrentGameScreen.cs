@@ -73,7 +73,7 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
                         clientHandler.ServerCertificateCustomValidationCallback +=
                             (sender, certificate, chain, sslPolicyErrors) => { return true; };
                     }
-
+                    // Console.WriteLine($"Message {message}");
                     return message;
                 };
             })
@@ -83,15 +83,19 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
         // Handle incoming game update events
         hubConnection.On<GameOverview>("CurrentGameUpdated", data =>
         {
+            // Console.WriteLine($"goes to  hubConnection.On<GameOverview>(\"CurrentGameUpdated\", data => {data}");
             CurrentGame = data;
             ReloadWindowTitle();
             CurrentGameLoading = false;
             CurrentRoundAction = null;
             if (data.Status == "InProgress") { CurrentGameStarted = true; }
             if (data.Status == "Ended") { CurrentGameEnded = true; }
+            // Console.WriteLine($"data status {data.Status}");
         });
 
         await hubConnection.StartAsync();
+        // Console.WriteLine("SignalR connected!");
+
 
         var loadingDialog = new Dialog()
         {
