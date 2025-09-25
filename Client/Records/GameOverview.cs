@@ -1,5 +1,6 @@
 namespace Client.Records;
 
+// Root object describing a game
 public sealed record GameOverview(
     int Id,
     string Name,
@@ -38,8 +39,16 @@ public record ConsultantOverview(
 public sealed record EmployeeOverview(
     int Id,
     string Name,
-    int Salary,
+    double Salary,
     ICollection<SkillOverview> Skills
+);
+
+public sealed record ProjectsOverview(
+    int Id,
+    string Name,
+    int Rounds,
+    double Reward
+// ICollection<SkillOverview> Skills
 );
 
 public sealed record SkillOverview(
@@ -56,12 +65,4 @@ public sealed record RoundActionOverview(
     string ActionType,
     string Payload,
     int PlayerId
-);
-
-public sealed record ProjectsOverview(
-    int Id,
-    string Name,
-    int Rounds,
-    double reward
-    // ICollection<SkillOverview> Skills
 );

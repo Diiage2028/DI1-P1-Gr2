@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 using Server.Models;
 using Server.Persistence.Contracts;
 
@@ -12,5 +14,10 @@ public class ProjectsTemplateRepository(WssDbContext context) : IProjectsTemplat
             await context.AddAsync(template);
         }
         await context.SaveChangesAsync();
+    }
+
+    public async Task<List<ProjectTemplate>> GetProjectTemplates()
+    {
+        return await context.ProjectTemplates.ToListAsync();
     }
 }

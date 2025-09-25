@@ -12,8 +12,8 @@ using Server.Persistence;
 namespace Server.Migrations
 {
     [DbContext(typeof(WssDbContext))]
-    [Migration("20250923211548_Project_Template_table")]
-    partial class Project_Template_table
+    [Migration("20250924092306_Project_drop_excess_table")]
+    partial class Project_drop_excess_table
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

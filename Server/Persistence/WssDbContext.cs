@@ -17,6 +17,8 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
     public DbSet<Player> Players { get; set; } = null!;
     public DbSet<Round> Rounds { get; set; } = null!;
     public DbSet<Skill> Skills { get; set; } = null!;
+    public DbSet<Project> Projects { get; set; } = null!;
+    public DbSet<ProjectTemplate> ProjectTemplates { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) // Creates instance of connexion
     {
