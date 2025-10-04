@@ -1,27 +1,30 @@
 using FluentResults;
+
+using Server.Actions;
 using Server.Actions.Contracts;
 using Server.Endpoints.Contracts;
 using Server.Models;
+using Server.Persistence;
 
 namespace Server.Endpoints;
 
-public class StatsEndpoint : IEndpoint
+public class GetEmployeeByGameId : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/stats", Handler).WithTags("Stats");
+        app.MapGet("/employee/game/{gameId}", Handler).WithTags("Employees");
     }
-
     public static async Task<IResult> Handler(
-        IAction<GetStatsParams, Result<GameStat>> getStatsAction
-    )
+       int gameId,
+       IAction<GetEmployeesByGameIdParams, Result<List<Employee>>> getEmployeesAction
+   )
     {
-        var actionParams = new GetStatsParams();
-        var actionResult = await getStatsAction.PerformAsync(actionParams);
+        var actionParams = new GetEmployeesByGameIdParams(GameId: gameId);
+
+        var actionResult = await getEmployeesAction.PerformAsync(actionParams);
 
         if (actionResult.IsFailed)
         {
-
             return Results.BadRequest(new { Errors = actionResult.Errors.Select(e => e.Message) });
         }
 

@@ -60,7 +60,7 @@ public class ApplyRoundAction(
         switch (roundAction)
         {
             case EnrollEmployeeRoundAction enrollEmployeeAction:
-                var createParams = new CreateEmployeeParams("John Smith", Company: company);
+                var createParams = new CreateEmployeeParams("John Smith", GameId : gameId!.Value);
                 var createResult = await createEmployeeAction.PerformAsync(createParams);
                 result = createResult.IsSuccess
                     ? Result.Ok()

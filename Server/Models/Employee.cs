@@ -2,7 +2,8 @@ using Server.Hubs.Records;
 
 namespace Server.Models;
 
-public class Employee(string name, int companyId, int gameId, decimal salary)
+public class Employee(string name, int? companyId, int gameId, decimal salary)
+
 {
     public int? Id { get; private set; }
 
@@ -16,9 +17,9 @@ public class Employee(string name, int companyId, int gameId, decimal salary)
 
     public Game Game { get; set; } = null!;
 
-    public int CompanyId { get; set; } = companyId;
+    public int? CompanyId { get; set; } = companyId;
 
-    public Company Company { get; set; } = null!;
+    public Company? Company { get; set; } 
 
     public EmployeeOverview ToOverview()
     {

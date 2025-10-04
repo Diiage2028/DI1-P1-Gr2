@@ -66,9 +66,9 @@ public class CreateCompany(
 
         await companiesRepository.SaveCompany(company);
 
-        foreach (var index in Enumerable.Range(1, 3))
+        foreach (var index in Enumerable.Range(1, 10))
         {
-            var createEmployeeParams = new CreateEmployeeParams("John Smith", Company: company);
+            var createEmployeeParams = new CreateEmployeeParams("John Smith", player.GameId);
             var createEmployeeResult = await createEmployeeAction.PerformAsync(createEmployeeParams);
 
             if (createEmployeeResult.IsFailed)

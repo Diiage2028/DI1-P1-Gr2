@@ -40,6 +40,7 @@ builder.Services.AddTransient<IAction<JoinGameParams, Result<Player>>, JoinGame>
 builder.Services.AddTransient<IAction<StartGameParams, Result<Game>>, StartGame>();
 builder.Services.AddTransient<IAction<StartRoundParams, Result<Round>>, StartRound>();
 builder.Services.AddTransient<IAction<GetStatsParams, Result<GameStat>>, GetStatsAction>();
+builder.Services.AddTransient<IAction<GetEmployeesByGameIdParams, Result<List<Employee>>>, GetEmployeesByGameIdAction>();
 
 builder.Services.AddTransient<IGameHubService, GameHubService>();
 builder.Services.AddTransient<IMainHubService, MainHubService>();
