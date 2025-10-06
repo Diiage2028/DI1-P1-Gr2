@@ -94,12 +94,17 @@ namespace Server.Migrations
                         .HasColumnType("varchar(255)");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                     b.Property<decimal>("Salary")
                         .HasColumnType("numeric");
 =======
                     b.Property<double>("Salary")
                         .HasColumnType("double precision");
 >>>>>>> 36f59c3 (edit col name project)
+=======
+                    b.Property<double>("Salary")
+                        .HasColumnType("double precision");
+>>>>>>> 6e737187807dcf3e29d970e7cf9d80ccc63edbd0
 
                     b.HasKey("Id");
 

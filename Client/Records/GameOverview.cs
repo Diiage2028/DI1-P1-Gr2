@@ -12,8 +12,12 @@ public sealed record GameOverview(
     string Status,
     ICollection<RoundOverview> Rounds,
     ICollection<ConsultantOverview> Consultants,
+<<<<<<< HEAD
     ICollection<ProjectsOverview> Projects,
     ICollection<EmployeeOverview> Employees
+=======
+    ICollection<ProjectsOverview> Projects
+>>>>>>> 6e737187807dcf3e29d970e7cf9d80ccc63edbd0
 );
 
 public sealed record PlayerOverview(
@@ -40,7 +44,11 @@ public record ConsultantOverview(
 public sealed record EmployeeOverview(
     int Id,
     string Name,
+<<<<<<< HEAD
     decimal Salary,
+=======
+    double Salary,
+>>>>>>> 6e737187807dcf3e29d970e7cf9d80ccc63edbd0
     ICollection<SkillOverview> Skills
 );
 

@@ -136,7 +136,12 @@ public class CreateGameScreen
         loadingDialog.Add(loadingText);
         Target.Add(loadingDialog);
 
+<<<<<<< HEAD
         try
+=======
+        // Security breach / ! \
+        var httpHandler = new HttpClientHandler
+>>>>>>> 6e737187807dcf3e29d970e7cf9d80ccc63edbd0
         {
             var httpHandler = new HttpClientHandler
             {
