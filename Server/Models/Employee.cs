@@ -2,13 +2,14 @@ using Server.Hubs.Records;
 
 namespace Server.Models;
 
-public class Employee(string name, int companyId, int gameId, double salary)
+public class Employee(string name, int? companyId, int gameId, decimal salary)
+
 {
     public int? Id { get; private set; }
 
     public string Name { get; set; } = name;
 
-    public double Salary { get; set; } = salary;
+    public decimal Salary { get; set; } = salary;
 
     public ICollection<LeveledSkill> Skills { get; } = [];
 
@@ -16,9 +17,9 @@ public class Employee(string name, int companyId, int gameId, double salary)
 
     public Game Game { get; set; } = null!;
 
-    public int CompanyId { get; set; } = companyId;
+    public int? CompanyId { get; set; } = companyId;
 
-    public Company Company { get; set; } = null!;
+    public Company? Company { get; set; } 
 
     public EmployeeOverview ToOverview()
     {

@@ -12,49 +12,58 @@ using Server.Models;
 using Server.Persistence.Contracts;
 
 namespace Server.Actions;
+// Immutable record (DTO) holding parameters needed to create an Employee.
+// Either a CompanyId or a Company object must be provided.
+public sealed record CreateEmployeeParams(string EmployeeName, int GameId );
 
-public sealed record CreateEmployeeParams(string EmployeeName, int? CompanyId = null, Company? Company = null);
-
+// Validator that defines rules for CreateEmployeeParams using FluentValidation.
 public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeParams>
 {
     public CreateEmployeeValidator()
     {
+        // Employee name must not be empty
         RuleFor(p => p.EmployeeName).NotEmpty();
-        RuleFor(p => p.CompanyId).NotEmpty().When(p => p.Company is null);
-        RuleFor(p => p.Company).NotEmpty().When(p => p.CompanyId is null);
+
+        // If no Company object is provided, CompanyId must be provided
+        //RuleFor(p => p.CompanyId).NotEmpty().When(p => p.Company is null);
+
+        // If no CompanyId is provided, Company object must be provided
+        //RuleFor(p => p.Company).NotEmpty().When(p => p.CompanyId is null);
     }
 }
 
+// Action class responsible for the business logic of creating an Employee.
+// Implements IAction interface: input = CreateEmployeeParams, output = Result<Employee>.
 public class CreateEmployee(
-    ICompaniesRepository companiesRepository,
-    IEmployeesRepository employeesRepository,
-    ISkillsRepository skillsRepository,
-    IGameHubService gameHubService
+    //ICompaniesRepository companiesRepository,   // Access company data
+    IEmployeesRepository employeesRepository,   // Save employee data
+    ISkillsRepository skillsRepository,         // Retrieve skills
+    IGameHubService gameHubService              // Notify clients via SignalR
 ) : IAction<CreateEmployeeParams, Result<Employee>>
 {
+    // Core business logic for creating an employee
     public async Task<Result<Employee>> PerformAsync(CreateEmployeeParams actionParams)
     {
         var rnd = new Random();
 
+        // Validate input parameters with the validator
         var actionValidator = new CreateEmployeeValidator();
         var actionValidationResult = await actionValidator.ValidateAsync(actionParams);
 
+        // If validation fails, return failure result with error messages
         if (actionValidationResult.Errors.Count != 0)
         {
             return Result.Fail(actionValidationResult.Errors.Select(e => e.ErrorMessage));
         }
 
-        var (employeeName, companyId, company) = actionParams;
+        // Deconstruct parameters for easier access
+        var (employeeName, gameId) = actionParams;
 
-        company ??= await companiesRepository.GetById(companyId!.Value);
-
-        if (company is null)
-        {
-            Result.Fail($"Company with Id \"{companyId}\" not found.");
-        }
+        
+        
 
         // Create employee first to get the skills
-        var employee = new Employee(employeeName, company!.Id!.Value, company!.Player.GameId, 0); // Start with 0 salary
+        var employee = new Employee(employeeName, null, gameId, 0); // Start with 0 salary
 
         // Get random skills and assign random levels
         var randomSkills = await skillsRepository.GetRandomSkills(3);
@@ -64,23 +73,26 @@ public class CreateEmployee(
             employee.Skills.Add(new LeveledSkill(randomSkill.Name, skillLevel));
         }
 
-        // Calculate salary based on skill levels: 150 * skill level * 1.02 for each skill
-        double totalSalary = 0;
-        // foreach (var skill in employee.Skills)
-        // {
-        //     totalSalary += 20.0 * skill.Level * 1.02;
-        // }
+        decimal totalSalary;
 
-        // New formula: 200 * number of skills * average skill level * (1 - random factor up to 10%)
-        totalSalary = 200 * employee.Skills.Count * employee.Skills.Average(s => s.Level) * (1 - rnd.NextDouble() * 0.1);
-
+        if (employee.Skills.Count == 0)
+        {
+            return Result.Fail("No skills available to compute salary.");
+        }
+        // New formula: baseFactor * count * avgLevel * (1 - random up to 10%)
+        const double baseFactor = 200;
+        var avgLevel = employee.Skills.Average(s => s.Level);
+        totalSalary = new decimal(baseFactor * employee.Skills.Count * avgLevel * (1 - rnd.NextDouble() * 0.1));
         // Set the calculated salary
         employee.Salary = totalSalary;
 
+        // Save the new employee in the repository
         await employeesRepository.SaveEmployee(employee);
 
-        await gameHubService.UpdateCurrentGame(gameId: company.Player.GameId);
+        // Notify clients that the game state has changed
+        await gameHubService.UpdateCurrentGame(gameId: gameId);
 
+        // Return success with the created employee
         return Result.Ok(employee);
     }
 }

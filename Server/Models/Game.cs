@@ -6,10 +6,11 @@ public enum GameStatus
 {
     Waiting,
     InProgress,
-    Finished
+    Finished,
+    Aborted
 }
 
-public class Game(string name, int rounds = 15)
+public class Game(string name, int rounds = 5)
 {
     public int? Id { get; private set; }
 

@@ -6,85 +6,120 @@ using Terminal.Gui;
 
 namespace Client.Screens;
 
-public class CreateGameScreen(Window target)
+public class CreateGameScreen
 {
-    private Window Target { get; } = target;
-    private readonly CreateGameForm Form = new();
-
+    private Window Target { get; }
+    private CreateGameForm Form;
     private int? GameId = null;
-
     private bool Submitted = false;
     private bool Returned = false;
     private bool Errored = false;
 
+    public CreateGameScreen(Window target)
+    {
+        Target = target;
+        Form = new CreateGameForm();
+    }
+
     public async Task Show()
     {
         await BeforeShow();
-        await DisplayForm();
 
-        if (Returned)
+        //variable to control the retry loop
+        bool shouldRetry;
+
+        // Attempt to show the form and create the game, retrying if there are errors
+        do
         {
-            await Return();
-            return;
-        }
+            //reset the retry control variable
+            shouldRetry = false;
+            await DisplayForm();
 
-        await CreateGame();
-
-        if (Errored)
-        {
-            Submitted = false;
-            Returned = false;
-
-            await DisplayForm(true);
-
+            // if user chose to return, go back to main menu
             if (Returned)
             {
                 await Return();
                 return;
             }
 
-            return;
-        }
+            // if user submitted the form, try to create the game
+            if (Submitted)
+            {
+                await CreateGame();
 
-        var currentGameScreen = new CurrentGameScreen(Target, (int) GameId!, Form.PlayerNameField.Text.ToString()!);
+                if (Errored)
+                {
+                    // if there was an error, set the retry flag to true to show the form again
+                    shouldRetry = true;
+                    ResetFlags();
+                }
+            }
 
+            // Repeat the loop if shouldRetry is true
+        } while (shouldRetry);
+
+        // if game creation was successful, proceed to the current game screen
+        var currentGameScreen = new CurrentGameScreen(
+            Target,
+            GameId!.Value,
+            Form.PlayerNameField.Text.ToString()!
+        );
+        // Show the current game screen
         await currentGameScreen.Show();
     }
 
+    // Reset the control flags for form submission and error handling
+    private void ResetFlags()
+    {
+        Submitted = false;
+        Returned = false;
+        Errored = false;
+    }
+
+    // Prepare the screen before showing it
     private Task BeforeShow()
     {
         Target.RemoveAll();
-        Target.Title = $"{MainWindow.Title} - [Create Game]";
+        Target.Title = "Game - [Create Game]";
         return Task.CompletedTask;
     }
 
+    // Handle returning to the main menu
     private async Task Return()
     {
         var mainMenuScreen = new MainMenuScreen(Target);
         await mainMenuScreen.Show();
     }
 
-    private async Task DisplayForm(bool errored = false)
+    // Display the form and wait for user interaction
+    // handles both submission and return actions
+    private async Task DisplayForm()
     {
-        Form.OnReturn = (_, __) => Returned = true;
-        Form.OnSubmit = (_, __) => Submitted = true;
+        Form.OnReturn = (_, __) => { Returned = true; };
+        Form.OnSubmit = (_, __) => { Submitted = true; };
 
         Form.FormView.X = Form.FormView.Y = Pos.Center();
-        Form.FormView.Width = 50;
-        Form.FormView.Height = 9;
+        Form.FormView.Width = 70;
+        Form.FormView.Height = 26;
+
+        Form.ErrorMessage.Visible = true;
 
         Target.Add(Form.FormView);
 
+        // continue waiting until the user either submits the form or chooses to return
         while (!Returned && !Submitted)
         {
+            // brief delay to prevent busy-waiting
             await Task.Delay(100);
         }
+
+        // remove the form from the screen after an action is taken
+        Target.Remove(Form.FormView);
     }
 
+    // Create a new game by sending a request to the server
     private async Task CreateGame()
     {
-        Target.Remove(Form.FormView);
-
         var loadingDialog = new Dialog()
         {
             Width = 18,
@@ -99,36 +134,63 @@ public class CreateGameScreen(Window target)
         };
 
         loadingDialog.Add(loadingText);
-
         Target.Add(loadingDialog);
 
-        var httpHandler = new HttpClientHandler
+        try
         {
-            ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
-        };
+            var httpHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+            };
+            // we use 'using var' to ensure the HttpClient is disposed of properly
+            using var httpClient = new HttpClient(httpHandler)
+            {
+                BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}"),
+            };
 
-        var httpClient = new HttpClient(httpHandler)
-        {
-            BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}"),
-        };
+            var gameName = Form.GameNameField.Text.ToString();
+            var playerName = Form.PlayerNameField.Text.ToString();
+            var companyName = Form.CompanyNameField.Text.ToString();
 
-        var gameName = Form.GameNameField.Text.ToString();
-        var playerName = Form.PlayerNameField.Text.ToString();
-        var companyName = Form.CompanyNameField.Text.ToString();
-        var rounds = int.Parse(Form.RoundsField.Text.ToString()!);
+            // client-side validation of the rounds number
+            // we convert the text to an integer and check if it's within the valid range
+            if (!int.TryParse(Form.RoundsField.Text.ToString(), out int rounds))
+            {
+                Form.ErrorMessage.Text = "Rounds must be a valid number";
+                Errored = true;
+                return;
+            }
 
-        var requestBody = new { gameName, playerName, companyName, rounds };
-        var request = httpClient.PostAsJsonAsync("/games", requestBody);
-        var response = await request;
+            var requestBody = new { gameName, playerName, companyName, rounds };
+            var response = await httpClient.PostAsJsonAsync("/games", requestBody);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            Errored = true;
+            if (!response.IsSuccessStatusCode)
+            {
+                Errored = true;
+                var errorContent = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    // try to parse the error content as a list of strings (validation errors)
+                    var errors = JsonSerializer.Deserialize<List<string>>(errorContent);
+                    Form.ErrorMessage.Text = string.Join("\n", errors ?? new List<string> { "Unknown error" });
+                }
+                catch
+                {
+                    // if parsing fails, just display the raw error content
+                    Form.ErrorMessage.Text = errorContent;
+                }
+            }
+            else
+            {
+                // on success, parse the response to get the new game's ID
+                var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+                GameId = content.GetProperty("id").GetInt32();
+            }
         }
-        else
+        // ensure the loading dialog (creating game) is removed from the screen even if an error occurs
+        finally
         {
-            var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-            GameId = content.GetProperty("id").GetInt32();
+            Target.Remove(loadingDialog);
         }
     }
 }
@@ -148,6 +210,7 @@ public class CreateGameForm
             _onSubmit = value;
         }
     }
+
     public EventHandler<HandledEventArgs> OnReturn
     {
         get => _onReturn;
@@ -167,6 +230,7 @@ public class CreateGameForm
     public Label PlayerNameLabel { get; }
     public Label CompanyNameLabel { get; }
     public Label RoundsLabel { get; }
+    public Label ErrorMessage { get; }
     public TextField GameNameField { get; }
     public TextField PlayerNameField { get; }
     public TextField CompanyNameField { get; }
@@ -203,7 +267,7 @@ public class CreateGameForm
             X = Pos.Left(CompanyNameLabel),
             Y = Pos.Bottom(CompanyNameLabel) + 1,
             Width = 20,
-            Text = "Rounds (15 - 100) :"
+            Text = "Rounds (5 - 20) :"
         };
 
         GameNameField = new TextField()
@@ -249,7 +313,16 @@ public class CreateGameForm
         SubmitButton = new Button()
         {
             Text = "Submit",
-            IsDefault = true
+            IsDefault = true,
+            X = Pos.Center(),
+        };
+
+        ErrorMessage = new Label()
+        {
+            Text = "",
+            X = Pos.Center(),
+            Y = Pos.Bottom(RoundsField) + 2,
+            Width = Dim.Fill()
         };
 
         ReturnButton = new Button()
@@ -259,26 +332,26 @@ public class CreateGameForm
             X = Pos.Right(SubmitButton) + 1
         };
 
-        SubmitButton.Accept += OnSubmit;
-        ReturnButton.Accept += OnReturn;
-
         ButtonsView.Add(SubmitButton, ReturnButton);
 
-        var submitButtonWidth = SubmitButton.Width;
-        var returnButtonWidth = ReturnButton.Width;
-
-        ButtonsView.Width = submitButtonWidth + returnButtonWidth + 1;
+        var submitButtonWidth = SubmitButton.Text.Length + 4;
+        var returnButtonWidth = ReturnButton.Text.Length + 4;
+        ButtonsView.Width = submitButtonWidth + returnButtonWidth + 15;
 
         FormView = new View()
         {
             Width = Dim.Fill(),
-            Height = Dim.Fill()
+            Height = Dim.Fill(),
         };
 
         FormView.Add(
             GameNameLabel, PlayerNameLabel, CompanyNameLabel, RoundsLabel,
             GameNameField, PlayerNameField, CompanyNameField, RoundsField,
-            ButtonsView
+            ButtonsView, ErrorMessage
         );
+
+        // Initialize event handlers to no-op to avoid null references
+        OnSubmit = (_, __) => { };
+        OnReturn = (_, __) => { };
     }
 }

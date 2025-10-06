@@ -9,9 +9,17 @@
         "@semantic-release/release-notes-generator",
         "@semantic-release/changelog",
         [
-            "@semantic-release/github",
+        "@semantic-release/github",
             {
-                "assets": []
+                "assets": [
+                    { "path": "release_artifacts/server-win-x64.zip" },
+                    { "path": "release_artifacts/server-linux-x64.zip" },
+                    { "path": "release_artifacts/server-osx-x64.zip" },
+                    { "path": "release_artifacts/client-win-x64.zip" },
+                    { "path": "release_artifacts/client-linux-x64.zip" },
+                    { "path": "release_artifacts/client-osx-x64.zip" },
+                    { "path": "release_artifacts/server-docker-image.tar" }
+                ]
             }
         ],
         [

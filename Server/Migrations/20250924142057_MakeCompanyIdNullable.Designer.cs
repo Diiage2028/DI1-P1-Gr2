@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Persistence;
@@ -11,9 +12,11 @@ using Server.Persistence;
 namespace Server.Migrations
 {
     [DbContext(typeof(WssDbContext))]
-    partial class WssDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250924142057_MakeCompanyIdNullable")]
+    partial class MakeCompanyIdNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -129,26 +132,6 @@ namespace Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("games", (string)null);
-                });
-
-            modelBuilder.Entity("Server.Models.InTraining", b =>
-                {
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TrainingId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StartRoundId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("EmployeeId", "TrainingId", "StartRoundId");
-
-                    b.HasIndex("StartRoundId");
-
-                    b.HasIndex("TrainingId");
-
-                    b.ToTable("in_trainings", (string)null);
                 });
 
             modelBuilder.Entity("Server.Models.Player", b =>
@@ -316,196 +299,6 @@ namespace Server.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Server.Models.Training", b =>
-                {
-                    b.Property<int?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
-
-                    b.Property<int>("Cost")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<int>("NbRound")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SkillId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SkillId");
-
-                    b.ToTable("trainings", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Cost = 5000,
-                            Name = "Formation HTML",
-                            NbRound = 2,
-                            SkillId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Cost = 5000,
-                            Name = "Formation CSS",
-                            NbRound = 2,
-                            SkillId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Cost = 5000,
-                            Name = "Formation JavaScript",
-                            NbRound = 2,
-                            SkillId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Cost = 5000,
-                            Name = "Formation TypeScript",
-                            NbRound = 2,
-                            SkillId = 4
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Cost = 5000,
-                            Name = "Formation React",
-                            NbRound = 2,
-                            SkillId = 5
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Cost = 5000,
-                            Name = "Formation Angular",
-                            NbRound = 2,
-                            SkillId = 6
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Cost = 5000,
-                            Name = "Formation Vue.js",
-                            NbRound = 2,
-                            SkillId = 7
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Cost = 5000,
-                            Name = "Formation Node.js",
-                            NbRound = 2,
-                            SkillId = 8
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Cost = 5000,
-                            Name = "Formation Express.js",
-                            NbRound = 2,
-                            SkillId = 9
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Cost = 5000,
-                            Name = "Formation ASP.NET Core",
-                            NbRound = 2,
-                            SkillId = 10
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Cost = 5000,
-                            Name = "Formation Ruby on Rails",
-                            NbRound = 2,
-                            SkillId = 11
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Cost = 5000,
-                            Name = "Formation Django",
-                            NbRound = 2,
-                            SkillId = 12
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Cost = 5000,
-                            Name = "Formation Flask",
-                            NbRound = 2,
-                            SkillId = 13
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Cost = 5000,
-                            Name = "Formation PHP",
-                            NbRound = 2,
-                            SkillId = 14
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Cost = 5000,
-                            Name = "Formation Laravel",
-                            NbRound = 2,
-                            SkillId = 15
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Cost = 5000,
-                            Name = "Formation Spring Boot",
-                            NbRound = 2,
-                            SkillId = 16
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Cost = 5000,
-                            Name = "Formation SQL",
-                            NbRound = 2,
-                            SkillId = 17
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Cost = 5000,
-                            Name = "Formation NoSQL",
-                            NbRound = 2,
-                            SkillId = 18
-                        },
-                        new
-                        {
-                            Id = 19,
-                            Cost = 5000,
-                            Name = "Formation GraphQL",
-                            NbRound = 2,
-                            SkillId = 19
-                        },
-                        new
-                        {
-                            Id = 20,
-                            Cost = 5000,
-                            Name = "Formation REST APIs",
-                            NbRound = 2,
-                            SkillId = 20
-                        });
-                });
-
             modelBuilder.Entity("Server.Models.Company", b =>
                 {
                     b.HasOne("Server.Models.Player", "Player")
@@ -602,33 +395,6 @@ namespace Server.Migrations
                     b.Navigation("Skills");
                 });
 
-            modelBuilder.Entity("Server.Models.InTraining", b =>
-                {
-                    b.HasOne("Server.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Server.Models.Round", "Round")
-                        .WithMany()
-                        .HasForeignKey("StartRoundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Server.Models.Training", "Training")
-                        .WithMany()
-                        .HasForeignKey("TrainingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Round");
-
-                    b.Navigation("Training");
-                });
-
             modelBuilder.Entity("Server.Models.Player", b =>
                 {
                     b.HasOne("Server.Models.Game", "Game")
@@ -673,17 +439,6 @@ namespace Server.Migrations
                     b.Navigation("Actions");
 
                     b.Navigation("Game");
-                });
-
-            modelBuilder.Entity("Server.Models.Training", b =>
-                {
-                    b.HasOne("Server.Models.Skill", "Skill")
-                        .WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Skill");
                 });
 
             modelBuilder.Entity("Server.Models.Company", b =>
