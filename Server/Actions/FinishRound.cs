@@ -23,9 +23,7 @@ public class FinishRoundValidator : AbstractValidator<FinishRoundParams>
 public class FinishRound(
     IRoundsRepository roundsRepository,
     IAction<ApplyRoundActionParams, Result> applyRoundActionAction,
-    IAction<StartRoundParams, Result<Round>> startRoundAction,
-    IAction<FinishGameParams, Result<Game>> finishGameAction,
-    IGameHubService gameHubService
+    IAction<StartRoundParams, Result<Round>> startRoundAction
 ) : IAction<FinishRoundParams, Result<Round>>
 {
     public async Task<Result<Round>> PerformAsync(FinishRoundParams actionParams)
@@ -59,29 +57,10 @@ public class FinishRound(
             }
         }
 
-        if (round.Game.CanStartANewRound())
-        {
-            var startRoundActionParams = new StartRoundParams(Game: round.Game);
-            var startRoundActionResult = await startRoundAction.PerformAsync(startRoundActionParams);
-            var newRound = startRoundActionResult.Value;
+        var startRoundActionParams = new StartRoundParams(Game: round.Game);
+        var startRoundActionResult = await startRoundAction.PerformAsync(startRoundActionParams);
+        var newRound = startRoundActionResult.Value;
 
-            await gameHubService.UpdateCurrentGame(gameId: round.GameId);
-
-            return Result.Ok(newRound);
-        }
-        else
-        {
-            var finishGameActionParams = new FinishGameParams(Game: round.Game);
-            var finishGameActionResult = await finishGameAction.PerformAsync(finishGameActionParams);
-
-            if (finishGameActionResult.IsFailed)
-            {
-                return Result.Fail(finishGameActionResult.Errors);
-            }
-
-            await gameHubService.UpdateCurrentGame(gameId: round.GameId);
-
-            return Result.Ok(round);
-        }
+        return Result.Ok(newRound);
     }
 }

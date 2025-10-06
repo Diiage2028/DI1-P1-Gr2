@@ -70,8 +70,10 @@ public class ActInRoundValidator : AbstractValidator<ActInRoundParams>
 public class ActInRound(
     IRoundsRepository roundsRepository,
     IPlayersRepository playersRepository,
+    IGamesRepository gamesRepository,
     IAction<FinishRoundParams, Result<Round>> finishRoundAction,
     IAction<ApplyRoundActionParams, Result> applyRoundAction,
+    IAction<FinishGameParams, Result<Game>> finishGameAction,
     IGameHubService gameHubService
 ) : IAction<ActInRoundParams, Result<Round>>
 {
@@ -114,17 +116,6 @@ public class ActInRound(
 
         if (round.EverybodyPlayed())
         {
-            // Apply the round action logic before adding to round
-            var applyResult = await applyRoundAction.PerformAsync(new ApplyRoundActionParams(
-                RoundAction: roundAction,
-                GameId: round.GameId
-            ));
-
-            if (applyResult.IsFailed)
-            {
-                return Result.Fail(applyResult.Errors);
-            }
-
             var finishRoundParams = new FinishRoundParams(Round: round);
             var finishRoundResult = await finishRoundAction.PerformAsync(finishRoundParams);
 
@@ -132,10 +123,21 @@ public class ActInRound(
             {
                 return Result.Fail(finishRoundResult.Errors);
             }
-        }
-        // IGameHubService → real time update via hub.
-        await gameHubService.UpdateCurrentGame(gameId: round.GameId);
 
-        return Result.Ok(round);
+            var game = await gamesRepository.GetById(round.GameId);
+
+            if (round.Order >= game!.Rounds)
+            {
+                // If this was the last round, return the finished round
+                var finishGameParams = new FinishGameParams(round.GameId);
+                await finishGameAction.PerformAsync(finishGameParams);
+            }
+
+            // Return the finished round from finishRoundAction
+            return finishRoundResult;
+        }
+
+        await gameHubService.UpdateCurrentGame(gameId: round.GameId);
+        return Result.Ok(round);// IAction<FinishGameParams, Result<Game>> finishGameAction,
     }
 }

@@ -66,6 +66,24 @@ public class ApplyRoundAction(
                     ? Result.Ok()
                     : Result.Fail(createResult.Errors);
                 break;
+            case SendEmployeeForTrainingRoundAction trainingAction:
+                // result = Result.Fail("SendEmployeeForTraining action not yet implemented");
+                result = Result.Ok();
+                break;
+
+            case ParticipateInProjectRoundAction projectAction:
+                // result = Result.Fail("ParticipateInProject action not yet implemented");
+                result = Result.Ok();
+                break;
+
+            case FireAnEmployeeRoundAction fireAction:
+                // result = Result.Fail("FireAnEmployee action not yet implemented");
+                result = Result.Ok();
+                break;
+
+            case ConfirmRoundAction confirmAction:
+                result = Result.Ok(); // Confirm round is usually just an acknowledgement
+                break;
             default:
                 result = Result.Fail($"Unknown round action type: {roundAction.Type}");
                 break;

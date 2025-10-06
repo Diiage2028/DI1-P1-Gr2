@@ -5,6 +5,7 @@ namespace Server.Models;
 
 public enum RoundActionType
 {
+    Default,
     SendEmployeeForTraining,
     ParticipateInProject,
     EnrollEmployee,
@@ -12,16 +13,16 @@ public enum RoundActionType
     ConfirmRound,
 }
 
+public class RoundActionPayload { }
+
 [JsonDerivedType(typeof(RoundAction), typeDiscriminator: "DEFAULT")]
-[JsonDerivedType(typeof(SendEmployeeForTrainingRoundAction), typeDiscriminator: "SendEmployeeForTraining")] // Added this line
+[JsonDerivedType(typeof(SendEmployeeForTrainingRoundAction), typeDiscriminator: "SendEmployeeForTraining")]
 [JsonDerivedType(typeof(ParticipateInProjectRoundAction), typeDiscriminator: "ParticipateInProject")]
 [JsonDerivedType(typeof(EnrollEmployeeRoundAction), typeDiscriminator: "EnrollEmployee")]
 [JsonDerivedType(typeof(FireAnEmployeeRoundAction), typeDiscriminator: "FireAnEmployee")]
 [JsonDerivedType(typeof(ConfirmRoundAction), typeDiscriminator: "ConfirmRound")]
 public class RoundAction(int? playerId)
 {
-    public class RoundActionPayload { }
-
     public static RoundAction CreateForType(RoundActionType actionType, int? playerId, RoundActionPayload payload)
     {
         RoundAction action = actionType switch
@@ -31,7 +32,7 @@ public class RoundAction(int? playerId)
             RoundActionType.EnrollEmployee => new EnrollEmployeeRoundAction(playerId),
             RoundActionType.FireAnEmployee => new FireAnEmployeeRoundAction(playerId),
             RoundActionType.ConfirmRound => new ConfirmRoundAction(playerId),
-            _ => new RoundAction(playerId), // Changed to base class
+            _ => throw new ArgumentException($"Unknown action type: {actionType}")
         };
 
         action.ApplyPayload(payload);
@@ -39,53 +40,63 @@ public class RoundAction(int? playerId)
         return action;
     }
 
-    protected virtual void ApplyPayload(RoundActionPayload payload) { }
+    protected virtual void ApplyPayload(RoundActionPayload payload)
+    {
+        // Base implementation does nothing
+    }
 
+    public int Id { get; set; }
+    public int RoundId { get; set; }
     public int? PlayerId { get; init; } = playerId;
     public RoundActionType Type => GetActionType();
 
-    protected virtual RoundActionType GetActionType() => RoundActionType.ConfirmRound; // Default
+    protected virtual RoundActionType GetActionType() => RoundActionType.Default;
 
     public RoundActionOverview ToOverview()
     {
         return new RoundActionOverview(
             Type.ToString(),
-            "PAYLOAD", // You'll need to implement this properly
+            "PAYLOAD",
             PlayerId ?? 0
         );
     }
 }
 
-// Add the missing class
 public class SendEmployeeForTrainingRoundAction(int? playerId) : RoundAction(playerId)
 {
+    [JsonDerivedType(typeof(SendEmployeeForTrainingPayload), typeDiscriminator: "SendEmployeeForTraining")]
     public class SendEmployeeForTrainingPayload : RoundActionPayload
     {
         public int EmployeeId { get; init; }
     }
 
-    public SendEmployeeForTrainingPayload Payload { get; private set; } = null!;
+    public SendEmployeeForTrainingPayload Payload { get; private set; } = new();
 
-    protected override void ApplyPayload(RoundActionPayload payload)
-    {
-        Payload = (SendEmployeeForTrainingPayload)payload;
-    }
+    protected override void ApplyPayload(RoundActionPayload payload) => Payload = (SendEmployeeForTrainingPayload)payload;
 
     protected override RoundActionType GetActionType() => RoundActionType.SendEmployeeForTraining;
 }
 
 public class ParticipateInProjectRoundAction(int? playerId) : RoundAction(playerId)
 {
+    [JsonDerivedType(typeof(ParticipateInProjectPayload), typeDiscriminator: "ParticipateInProject")]
     public class ParticipateInProjectPayload : RoundActionPayload
     {
         public int ProjectId { get; init; }
     }
 
-    public ParticipateInProjectPayload Payload { get; private set; } = null!;
+    public ParticipateInProjectPayload Payload { get; private set; } = new();
 
     protected override void ApplyPayload(RoundActionPayload payload)
     {
-        Payload = (ParticipateInProjectPayload)payload;
+        if (payload is ParticipateInProjectPayload specificPayload)
+        {
+            Payload = specificPayload;
+        }
+        else
+        {
+            throw new InvalidCastException($"Expected ParticipateInProjectPayload but got {payload.GetType().Name}");
+        }
     }
 
     protected override RoundActionType GetActionType() => RoundActionType.ParticipateInProject;
@@ -93,33 +104,31 @@ public class ParticipateInProjectRoundAction(int? playerId) : RoundAction(player
 
 public class EnrollEmployeeRoundAction(int? playerId) : RoundAction(playerId)
 {
-    public class EnrollEmployeeRoundPayload : RoundActionPayload
-    {
-        public int EmployeeId { get; init; }
-    }
-
-    public EnrollEmployeeRoundPayload Payload { get; private set; } = null!;
-
     protected override void ApplyPayload(RoundActionPayload payload)
     {
-        Payload = (EnrollEmployeeRoundPayload)payload;
     }
-
-    protected override RoundActionType GetActionType() => RoundActionType.EnrollEmployee;
 }
 
 public class FireAnEmployeeRoundAction(int? playerId) : RoundAction(playerId)
 {
+    [JsonDerivedType(typeof(FireAnEmployeePayload), typeDiscriminator: "FireAnEmployee")]
     public class FireAnEmployeePayload : RoundActionPayload
     {
         public int EmployeeId { get; init; }
     }
 
-    public FireAnEmployeePayload Payload { get; private set; } = null!;
+    public FireAnEmployeePayload Payload { get; private set; } = new();
 
     protected override void ApplyPayload(RoundActionPayload payload)
     {
-        Payload = (FireAnEmployeePayload)payload;
+        if (payload is FireAnEmployeePayload specificPayload)
+        {
+            Payload = specificPayload;
+        }
+        else
+        {
+            throw new InvalidCastException($"Expected FireAnEmployeePayload but got {payload.GetType().Name}");
+        }
     }
 
     protected override RoundActionType GetActionType() => RoundActionType.FireAnEmployee;

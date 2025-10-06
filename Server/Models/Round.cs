@@ -16,12 +16,12 @@ public class Round(int gameId, int order)
 
     public bool CanPlayerActIn(int PlayerId)
     {
-        return !Actions.Any(a => a.PlayerId == PlayerId);
+        return !Actions.Any(a => a.PlayerId == PlayerId && a.Type == RoundActionType.ConfirmRound);
     }
 
     public bool EverybodyPlayed()
     {
-        return Game.Players.All(p => Actions.Any(a => a.PlayerId == p.Id));
+        return Game.Players.All(p => Actions.Any(a => a.PlayerId == p.Id && a.Type == RoundActionType.ConfirmRound));
     }
 
     public RoundOverview ToOverview()

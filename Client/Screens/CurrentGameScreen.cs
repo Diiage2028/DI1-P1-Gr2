@@ -30,8 +30,8 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
     private bool CurrentGameStarted = false;
     private bool CurrentGameEnded = false;
 
-    // Player's chosen action for the current round
-    private CurrentGameActionList.Action? CurrentRoundAction = null;
+    // Change from single action to list of actions
+    private List<CurrentGameActionList.Action>? CurrentRoundActions = null;
 
     public async Task Show()
     {
@@ -55,6 +55,15 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
     {
         var gameName = CurrentGame is null ? "..." : CurrentGame.Name;
         Target.Title = $"{MainWindow.Title} - [Game {gameName}]";
+    }
+
+    private void RedirectToFinishedGame()
+    {
+        if (CurrentGame == null) return;
+
+        Target.RemoveAll();
+        var finishedScreen = new FinishedGameScreen(Target);
+        finishedScreen.Show();
     }
 
     // Connects to SignalR hub to receive game updates
@@ -84,9 +93,9 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
             CurrentGame = data;
             ReloadWindowTitle();
             CurrentGameLoading = false;
-            CurrentRoundAction = null;
+            CurrentRoundActions = null;
             if (data.Status == "InProgress") { CurrentGameStarted = true; }
-            if (data.Status == "Ended") { CurrentGameEnded = true; }
+            if (data.Status == "Finished") { CurrentGameEnded = true; }
         });
 
         await hubConnection.StartAsync();
@@ -111,6 +120,11 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
         while (CurrentGameLoading) { await Task.Delay(100); }
 
         Target.Remove(loadingDialog);
+
+        if (CurrentGameEnded)
+        {
+            RedirectToFinishedGame();
+        }
     }
 
     private async Task DisplayMainView()
@@ -142,27 +156,35 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
 
         companyView.X = companyView.Y = 5;
         companyView.Width = companyView.Height = Dim.Fill() - 5;
-        companyView.OnRoundAction = (_, roundAction) => { CurrentRoundAction = roundAction; };
+
+        // Update to handle list of actions
+        companyView.OnRoundActions = (_, roundActions) => { CurrentRoundActions = roundActions; };
 
         Target.Add(companyView);
 
-        while (CurrentRoundAction is null && !CurrentGameEnded)
+        // Wait until player confirms their turn with actions
+        while (CurrentRoundActions is null && !CurrentGameEnded)
         {
             await Task.Delay(100);
         }
 
         var lastRound = CurrentGame!.CurrentRound;
 
-        await ActInRound();
+        if (CurrentRoundActions != null)
+        {
+            await ActInRound();
+        }
 
         while (
             !CurrentGameEnded &&
-            // CurrentGame!.CurrentRound != CurrentGame.MaximumRounds &&
             CurrentGame!.CurrentRound == lastRound
         )
         {
             await Task.Delay(100);
         }
+
+        // Reset for next round
+        CurrentRoundActions = null;
 
         if (!CurrentGameEnded)
         {
@@ -170,45 +192,137 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
         }
     }
 
-    private async Task ActInRound()
+     private async Task ActInRound()
     {
         Target.RemoveAll();
 
         var loadingDialog = new Dialog()
         {
-            Width = 18,
-            Height = 3
+            Width = 25,
+            Height = 3,
+            Title = "Processing Actions"
         };
 
         var loadingText = new Label()
         {
-            Text = "Waiting for other players...",
+            Text = "Processing actions...",
             X = Pos.Center(),
             Y = Pos.Center()
         };
 
         loadingDialog.Add(loadingText);
-
         Target.Add(loadingDialog);
 
-        var httpHandler = new HttpClientHandler
+        try
         {
-            ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+            using var httpHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+            };
+
+            using var httpClient = new HttpClient(httpHandler)
+            {
+                BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}"),
+            };
+
+            var successfulActions = new List<CurrentGameActionList.Action>();
+            var failedActions = new List<CurrentGameActionList.Action>();
+
+            // Send all actions in sequence
+            foreach (var action in CurrentRoundActions!)
+            {
+                if (action == CurrentGameActionList.Action.ConfirmRound)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    loadingText.Text = $"Processing: {action}...";
+
+                    var roundId = CurrentGame!.Rounds.MaxBy(r => r.Id)!.Id;
+                    var playerId = CurrentGame.Players.First(p => p.Name == PlayerName).Id;
+
+                    var request = new HttpRequestMessage(HttpMethod.Post, $"/rounds/{roundId}/act")
+                    {
+                        Content = JsonContent.Create(new
+                        {
+                            ActionType = action.ToString(),
+                            ActionPayload = "{}",
+                            PlayerId = playerId
+                        })
+                    };
+
+                    var response = await httpClient.SendAsync(request);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        successfulActions.Add(action);
+                    }
+                    else
+                    {
+                        failedActions.Add(action);
+                        ShowErrorDialog($"Failed to execute: {action}\nStatus: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failedActions.Add(action);
+                    ShowErrorDialog($"Error executing {action}:\n{ex.Message}");
+                }
+            }
+
+            // Show summary
+            if (failedActions.Count == 0)
+            {
+                loadingText.Text = "All actions completed successfully!";
+                await Task.Delay(1000);
+            }
+            else
+            {
+                loadingText.Text = $"{successfulActions.Count} successful, {failedActions.Count} failed";
+                await Task.Delay(2000);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowErrorDialog($"Network error: {ex.Message}");
+        }
+        finally
+        {
+            Target.Remove(loadingDialog);
+        }
+    }
+
+    private void ShowErrorDialog(string message)
+    {
+        var errorDialog = new Dialog()
+        {
+            Width = 200,
+            Height = 6,
+            Title = "Error"
         };
 
-        var httpClient = new HttpClient(httpHandler)
+        var errorText = new Label()
         {
-            BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}"),
+            Text = message,
+            X = 1,
+            Y = 1,
+            Width = Dim.Fill() - 2,
+            Height = Dim.Fill() - 2
         };
 
-        var request = httpClient.PostAsJsonAsync($"/rounds/{CurrentGame!.Rounds.MaxBy(r => r.Id)!.Id}/act", new
+        // Correct button creation - no parameters in constructor
+        var okButton = new Button()
         {
-            ActionType = CurrentRoundAction!.ToString(),
-            ActionPayload = "{}",
-            PlayerId = CurrentGame.Players.First(p => p.Name == PlayerName).Id
-        });
+            X = Pos.Center(),
+            Y = Pos.Bottom(errorText),
+            Text = "OK"  // Set text as property, not in constructor
+        };
 
-        await request;
+        errorDialog.Add(errorText, okButton);
+
+        Application.Run(errorDialog);
     }
 }
 
@@ -233,8 +347,8 @@ public class CurrentGameMainView : CurrentGameView
         Game = game;
         PlayerName = playerName;
 
-        Width = Dim.Auto(DimAutoStyle.Auto);
-        Height = Dim.Auto(DimAutoStyle.Auto);
+        Width = Dim.Auto();
+        Height = Dim.Auto();
 
         SetupPlayers();
         SetupStatus();
@@ -399,7 +513,8 @@ public class CurrentGameCompanyView : CurrentGameView
     private GameOverview Game;
     private PlayerOverview CurrentPlayer;
     private readonly string PlayerName;
-    public EventHandler<CurrentGameActionList.Action> OnRoundAction = (_, __) => { };
+    private List<CurrentGameActionList.Action> CurrentRoundActions = new();
+    public EventHandler<List<CurrentGameActionList.Action>> OnRoundActions = (_, __) => { };
 
     private View? Header;
     private View? Body;
@@ -729,14 +844,60 @@ public class CurrentGameCompanyView : CurrentGameView
             Height = Dim.Fill()
         };
 
-        actionList.OpenSelectedItem += (_, selected) => { OnRoundAction(null, (CurrentGameActionList.Action) selected.Value); };
+        actionList.OpenSelectedItem += (_, selected) =>
+        {
+            var action = (CurrentGameActionList.Action)selected.Value;
+
+            if (action == CurrentGameActionList.Action.ConfirmRound)
+            {
+                // When confirming, send all accumulated actions
+                OnRoundActions(null, new List<CurrentGameActionList.Action>(CurrentRoundActions));
+            }
+            else
+            {
+                // Add action to current turn (you might want to show feedback)
+                CurrentRoundActions.Add(action);
+
+                // Show current actions in a status area
+                UpdateActionsStatus();
+            }
+        };
 
         Actions.Add(actionList);
+
+        // Add a status view to show current actions
+        var statusView = new Label()
+        {
+            Text = "Current actions: None",
+            X = 0,
+            Y = Pos.Bottom(actionList),
+            Width = Dim.Fill(),
+            Height = 1
+        };
+
+        Actions.Add(statusView);
 
         actionList.SetFocus();
         actionList.MoveHome();
 
         RightBody!.Add(Actions);
+    }
+
+    private void UpdateActionsStatus()
+    {
+        var statusLabel = Actions!.Subviews.OfType<Label>().FirstOrDefault();
+        if (statusLabel != null)
+        {
+            if (CurrentRoundActions.Count == 0)
+            {
+                statusLabel.Text = "Current actions: None";
+            }
+            else
+            {
+                var actionsText = string.Join(", ", CurrentRoundActions.Select(a => a.ToString()));
+                statusLabel.Text = $"Current actions: {actionsText}";
+            }
+        }
     }
 
     private void RemoveHeader()
@@ -809,24 +970,17 @@ public class CurrentGameActionListDataSource : List<CurrentGameActionList.Action
 
     public void Render(ListView container, ConsoleDriver driver, bool selected, int item, int col, int line, int width, int start = 0)
     {
-        switch (item)
+        var actionText = this[item] switch
         {
-            case (int) CurrentGameActionList.Action.SendEmployeeForTraining:
-                driver.AddStr("Send Employee For Training");
-                break;
-            case (int) CurrentGameActionList.Action.ParticipateInProject:
-                driver.AddStr("Participate In Project");
-                break;
-            case (int) CurrentGameActionList.Action.EnrollEmployee:
-                driver.AddStr("Enroll In Formation");
-                break;
-            case (int) CurrentGameActionList.Action.FireAnEmployee:
-                driver.AddStr("Fire An Employee");
-                break;
-            case (int) CurrentGameActionList.Action.ConfirmRound:
-                driver.AddStr("Confirm My Turn");
-                break;
-        }
+            CurrentGameActionList.Action.SendEmployeeForTraining => "Send Employee For Training",
+            CurrentGameActionList.Action.ParticipateInProject => "Participate In Project",
+            CurrentGameActionList.Action.EnrollEmployee => "Enroll Employee",
+            CurrentGameActionList.Action.FireAnEmployee => "Fire An Employee",
+            CurrentGameActionList.Action.ConfirmRound => "✅ Confirm My Turn",
+            _ => "Unknown Action"
+        };
+
+        driver.AddStr(actionText);
     }
 
     public void SetMark(int item, bool value) { }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
+using Server.Actions;
 using Server.Models;
 using Server.Persistence.Contracts;
 
@@ -39,6 +40,7 @@ public class GamesRepository(WssDbContext context) : IGamesRepository
             .Include(g => g.Players).ThenInclude(p => p.Company).ThenInclude(c => c.Employees).ThenInclude(e => e.Skills)
             .Include(g => g.Consultants).ThenInclude(c => c.Skills)
             .Include(g => g.RoundsCollection)
+            .Include(g => g.RoundsCollection).ThenInclude(a => a.Actions)
             .FirstOrDefaultAsync(g => g.Id == gameId);
     }
 
@@ -64,5 +66,16 @@ public class GamesRepository(WssDbContext context) : IGamesRepository
         }
 
         await context.SaveChangesAsync();
+    }
+
+    public async Task<Game> FinishGame(int gameId)
+    {
+        var game = await context.Games.FindAsync(gameId);
+        if (game != null)
+        {
+            game.Status = GameStatus.Finished;
+            await context.SaveChangesAsync();
+        }
+        return game; // Return the updated game
     }
 }

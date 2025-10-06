@@ -9,6 +9,7 @@ using Server.Actions.Contracts;
 using Server.Hubs;
 using Server.Hubs.Contracts;
 using Server.Models;
+using Server.Persistence.Contracts;
 
 namespace Server.Actions;
 
@@ -23,10 +24,38 @@ public class FinishGameValidator : AbstractValidator<FinishGameParams>
     }
 }
 
-public class FinishGame(IGameHubService gameHubService) : IAction<FinishGameParams, Result<Game>>
+public class FinishGame(IGamesRepository gamesRepository) : IAction<FinishGameParams, Result<Game>>
 {
-    public Task<Result<Game>> PerformAsync(FinishGameParams actionParams)
+    public async Task<Result<Game>> PerformAsync(FinishGameParams actionParams)
     {
-        throw new NotImplementedException();
+        var actionValidator = new FinishGameValidator();
+        var actionValidationResult = await actionValidator.ValidateAsync(actionParams);
+
+        if (!actionValidationResult.IsValid)
+        {
+            return Result.Fail<Game>(actionValidationResult.Errors.Select(e => e.ErrorMessage));
+        }
+
+        // Get game ID from either parameter
+        int gameId;
+        if (actionParams.Game != null)
+        {
+            gameId = actionParams.Game.Id ?? throw new InvalidOperationException("Game must have an ID");
+        }
+        else
+        {
+            gameId = actionParams.GameId!.Value;
+        }
+
+        // Verify game exists
+        var game = await gamesRepository.GetById(gameId);
+        if (game is null)
+        {
+            return Result.Fail<Game>($"Game with id {gameId} not found");
+        }
+
+        // Finish the game and return the updated game
+        var finishedGame = await gamesRepository.FinishGame(gameId);
+        return Result.Ok(finishedGame);
     }
 }

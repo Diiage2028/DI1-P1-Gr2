@@ -1,11 +1,10 @@
 services:
 
-
     wss_db:
         image: postgres:16.3
         container_name: wss_db
         environment:
-            POSTGRES_DB: wss_dev
+            POSTGRES_DB: wss_prod
             POSTGRES_USER: wss
             POSTGRES_PASSWORD: WSS
         ports:
@@ -23,6 +22,22 @@ services:
             - "8080:80"
         volumes:
             - wss_db_admin_data:/var/lib/pgadmin
+
+    wss_server:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: wss_server
+        ports:
+            - "5000:8080"
+        environment:
+            - Database__Host=wss_db
+            - Database__Port=5432
+            - Database__Name=wss_prod
+            - Database__User=wss
+            - Database__Pass=WSS
+        depends_on:
+            - wss_db
 
 volumes:
     wss_db_data:

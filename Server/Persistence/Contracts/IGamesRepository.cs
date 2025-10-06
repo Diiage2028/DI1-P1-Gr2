@@ -11,4 +11,5 @@ public interface IGamesRepository
     Task<Game?> GetForOverviewById(int gameId);
     Task<Game?> GetByPlayerId(int playerId);
     Task SaveGame(Game game);
+    Task<Game?> FinishGame(int gameId);
 }

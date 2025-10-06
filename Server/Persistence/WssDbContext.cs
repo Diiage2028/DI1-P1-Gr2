@@ -38,7 +38,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
         modelBuilder.Entity<Company>(e =>
         {
             e.ToTable("companies");
-            e.HasKey(e => e.Id); 
+            e.HasKey(e => e.Id);
             e.Property(e => e.Name).HasColumnType("varchar(255)");
             e.Property(e => e.Treasury).HasColumnType("integer").HasDefaultValue(1000000); // Default value
             e.HasOne(e => e.Player)
@@ -67,6 +67,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
         {
             e.ToTable("employees");
             e.HasKey(e => e.Id);
+            e.Property(e => e.Salary).HasColumnType("integer");
             e.Property(e => e.Name).HasColumnType("varchar(255)");
             e.HasOne(e => e.Game)
                 .WithMany()
@@ -124,9 +125,44 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.HasOne(e => e.Game)
                 .WithMany(e => e.RoundsCollection)
                 .HasForeignKey(e => e.GameId);
-            e.OwnsMany(e => e.Actions, builder => builder.ToJson());
+
+            // Regular one-to-many instead of JSON
+            e.HasMany(e => e.Actions)
+                .WithOne()
+                .HasForeignKey(a => a.RoundId) // You'll need to add this property
+                .IsRequired();
         });
 
+        modelBuilder.Entity<RoundAction>(e =>
+        {
+            e.ToTable("round_actions");
+            e.HasKey(e => e.Id);
+
+            // Configure TPH (Table Per Hierarchy) for inheritance
+            e.HasDiscriminator<RoundActionType>("ActionType")
+                .HasValue<RoundAction>(RoundActionType.Default) // Add default for base class
+                .HasValue<SendEmployeeForTrainingRoundAction>(RoundActionType.SendEmployeeForTraining)
+                .HasValue<ParticipateInProjectRoundAction>(RoundActionType.ParticipateInProject)
+                .HasValue<EnrollEmployeeRoundAction>(RoundActionType.EnrollEmployee)
+                .HasValue<FireAnEmployeeRoundAction>(RoundActionType.FireAnEmployee)
+                .HasValue<ConfirmRoundAction>(RoundActionType.ConfirmRound);
+
+            // Configure the foreign key property
+            e.Property(a => a.RoundId).IsRequired();
+        });
+
+        // Configure derived types separately
+        modelBuilder.Entity<SendEmployeeForTrainingRoundAction>()
+            .Property(a => a.Payload)
+            .HasColumnType("jsonb");
+
+        modelBuilder.Entity<ParticipateInProjectRoundAction>()
+            .Property(a => a.Payload)
+            .HasColumnType("jsonb");
+
+        modelBuilder.Entity<FireAnEmployeeRoundAction>()
+            .Property(a => a.Payload)
+            .HasColumnType("jsonb");
         modelBuilder.Entity<Skill>(e =>
         {
             e.ToTable("skills");
