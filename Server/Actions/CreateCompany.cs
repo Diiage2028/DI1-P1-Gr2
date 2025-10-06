@@ -1,5 +1,5 @@
 using FluentResults;
-
+using Faker;
 using FluentValidation;
 
 using Microsoft.AspNetCore.SignalR;
@@ -29,9 +29,9 @@ public class CreateCompany(
   IPlayersRepository playersRepository,
   IAction<CreateEmployeeParams, Result<Employee>> createEmployeeAction,
   IGameHubService gameHubService
-) : IAction<CreateCompanyParams, Result<Company>>
+) : IAction<CreateCompanyParams, Result<Models.Company>>
 {
-    public async Task<Result<Company>> PerformAsync(CreateCompanyParams actionParams)
+    public async Task<Result<Models.Company>> PerformAsync(CreateCompanyParams actionParams)
     {
         var actionValidator = new CreateCompanyValidator();
         var actionValidationResult = await actionValidator.ValidateAsync(actionParams);
@@ -62,13 +62,13 @@ public class CreateCompany(
             return Result.Fail("'Company Name' is already in use.");
         }
 
-        var company = new Company(companyName, player.Id!.Value);
+        var company = new Models.Company(companyName, player.Id!.Value);
 
         await companiesRepository.SaveCompany(company);
 
         foreach (var index in Enumerable.Range(1, 10))
         {
-            var createEmployeeParams = new CreateEmployeeParams("John Smith", player.GameId);
+            var createEmployeeParams = new CreateEmployeeParams(Faker.Name.FullName(), player.GameId);
             var createEmployeeResult = await createEmployeeAction.PerformAsync(createEmployeeParams);
 
             if (createEmployeeResult.IsFailed)
