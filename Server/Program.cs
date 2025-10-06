@@ -40,6 +40,7 @@ builder.Services.AddTransient<IAction<JoinGameParams, Result<Player>>, JoinGame>
 builder.Services.AddTransient<IAction<StartGameParams, Result<Game>>, StartGame>();
 builder.Services.AddTransient<IAction<StartRoundParams, Result<Round>>, StartRound>();
 builder.Services.AddTransient<IAction<GetStatsParams, Result<GameStat>>, GetStatsAction>();
+builder.Services.AddTransient<IAction<GetEmployeesByGameIdParams, Result<List<Employee>>>, GetEmployeesByGameIdAction>();
 
 builder.Services.AddTransient<IGameHubService, GameHubService>();
 builder.Services.AddTransient<IMainHubService, MainHubService>();
@@ -54,6 +55,22 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<WssDbContext>();
         context.Database.Migrate(); // This applies pending migrations
+        // Update games that are not Finished or Exited to Exit status
+        var gamesToUpdate = context.Games
+            .Where(g => g.Status != GameStatus.Finished && g.Status != GameStatus.Aborted)
+            .ToList();
+
+        if (gamesToUpdate.Any())
+        {
+            foreach (var game in gamesToUpdate)
+            {
+                game.Status = GameStatus.Aborted;
+            }
+
+            context.SaveChanges();
+            Console.WriteLine($"Updated {gamesToUpdate.Count} games to Exit status.");
+        }
+
         Console.WriteLine("Database migrations applied successfully.");
     }
     catch (Exception ex)

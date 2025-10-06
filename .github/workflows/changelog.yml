@@ -68,7 +68,41 @@ jobs:
           zip -r client-osx-x64.zip client-osx
           cd ..
 
-      - name: Semantic Release
+      - name: Build Docker image for server
+        run: |
+          # Build the Docker image with latest tag
+          docker build -t whysoserious:latest -f ./Server/Dockerfile ./Server
+          
+          # Optionally save the image as a tar file for distribution
+          docker save whysoserious:latest -o release_artifacts/whysoserious-image.tar
+
+      - name: Run Semantic Release and get version
+        id: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --no-ci
+        run: |
+          # Run semantic-release to create the actual release
+          npx semantic-release --no-ci
+          
+          # Get the latest tag that was created by semantic-release
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Released version: $LATEST_TAG"
+
+      - name: Build and push Docker image to GHCR with version tag
+        if: steps.semantic-release.outputs.version && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          VERSION=${{ steps.semantic-release.outputs.version }}
+          echo "Pushing Docker image with version: $VERSION"
+          
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Tag the existing local image with version and push both tags
+          docker tag whysoserious:latest ghcr.io/${{ github.repository_owner }}/whysoserious:latest
+          docker tag whysoserious:latest ghcr.io/${{ github.repository_owner }}/whysoserious:$VERSION
+          
+          # Push both tags
+          docker push ghcr.io/${{ github.repository_owner }}/whysoserious:latest
+          docker push ghcr.io/${{ github.repository_owner }}/whysoserious:$VERSION
+          
+          echo "Successfully pushed tags: latest and $VERSION"

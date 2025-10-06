@@ -68,6 +68,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.ToTable("employees");
             e.HasKey(e => e.Id);
             e.Property(e => e.Name).HasColumnType("varchar(255)");
+            e.Property(e => e.Salary).HasColumnType("integer");
             e.HasOne(e => e.Game)
                 .WithMany()
                 .HasForeignKey(e => e.GameId)
@@ -75,7 +76,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.HasOne(e => e.Company)
                 .WithMany(e => e.Employees)
                 .HasForeignKey(e => e.CompanyId)
-                .IsRequired()
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
             e.OwnsMany(e => e.Skills, builder => builder.ToJson());
         });

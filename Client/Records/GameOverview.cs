@@ -10,7 +10,8 @@ public sealed record GameOverview(
     int CurrentRound,
     string Status,
     ICollection<RoundOverview> Rounds,
-    ICollection<ConsultantOverview> Consultants
+    ICollection<ConsultantOverview> Consultants,
+    ICollection<EmployeeOverview> Employees
 );
 
 public sealed record PlayerOverview(
@@ -36,7 +37,7 @@ public record ConsultantOverview(
 public sealed record EmployeeOverview(
     int Id,
     string Name,
-    int Salary,
+    decimal Salary,
     ICollection<SkillOverview> Skills
 );
 

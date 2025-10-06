@@ -1,41 +1,35 @@
 {
-  "branches": ["main"],
-  "plugins": [
-    ["@semantic-release/commit-analyzer", {
-      "preset": "angular",
-      "releaseRules": [
-        {"type": "feat", "release": "minor"},
-        {"type": "fix", "release": "patch"},
-        {"type": "perf", "release": "patch"},
-        {"type": "docs", "release": "patch"},
-        {"type": "chore", "release": "patch"},
-        {"type": "style", "release": "patch"},
-        {"type": "refactor", "release": "patch"},
-        {"type": "test", "release": "patch"},
-        {"type": "build", "release": "patch"},
-        {"type": "ci", "release": "patch"},
-        {"type": "revert", "release": "patch"},
-        {"breaking": true, "release": "major"}
-      ]
-    }],
-    "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
-    "@semantic-release/git",
-    [
-      "@semantic-release/github",
-      {
-        "assets": [
-          "release_artifacts/*.zip",
-          "CHANGELOG.md"
-        ]
-      }
+    "branches": [
+        {
+            "name": "main"
+        }
     ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": ["CHANGELOG.md"],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-      }
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        "@semantic-release/changelog",
+        [
+        "@semantic-release/github",
+            {
+                "assets": [
+                    { "path": "release_artifacts/server-win-x64.zip" },
+                    { "path": "release_artifacts/server-linux-x64.zip" },
+                    { "path": "release_artifacts/server-osx-x64.zip" },
+                    { "path": "release_artifacts/client-win-x64.zip" },
+                    { "path": "release_artifacts/client-linux-x64.zip" },
+                    { "path": "release_artifacts/client-osx-x64.zip" },
+                    { "path": "release_artifacts/server-docker-image.tar" }
+                ]
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": [
+                    "CHANGELOG.md"
+                ],
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+            }
+        ]
     ]
-  ]
 }

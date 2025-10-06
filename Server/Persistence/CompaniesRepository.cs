@@ -39,4 +39,9 @@ public class CompaniesRepository(WssDbContext context) : ICompaniesRepository
 
         await context.SaveChangesAsync();
     }
+
+    public async Task<Company?> GetByPlayerId(int playerId)
+    {
+        return await context.Companies.FirstOrDefaultAsync(c => c.PlayerId == playerId);
+    }
 }
