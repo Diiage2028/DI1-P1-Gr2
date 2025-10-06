@@ -1,4 +1,4 @@
-name: Release, Changelog & Build
+name: Release & Changelog
 
 on:
   push:
@@ -14,10 +14,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    outputs:
-      released: ${{ steps.semantic-release.outputs.released }}
-      version: ${{ steps.semantic-release.outputs.version }}
-      tag: ${{ steps.semantic-release.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +38,7 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet restore
-
+          
       - name: Install release tools
         run: |
           npm install -g semantic-release @semantic-release/changelog @semantic-release/git conventional-changelog-cli

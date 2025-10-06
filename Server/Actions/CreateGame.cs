@@ -18,7 +18,7 @@ public class CreateGameValidator : AbstractValidator<CreateGameParams>
         RuleFor(p => p.GameName).NotEmpty();
         RuleFor(p => p.PlayerName).NotEmpty();
         RuleFor(p => p.CompanyName).NotEmpty();
-        RuleFor(p => p.Rounds).NotNull().GreaterThanOrEqualTo(5).LessThanOrEqualTo(20);
+        RuleFor(p => p.Rounds).NotNull().InclusiveBetween(5, 20).WithMessage("Rounds must be between 5 and 20.");
     }
 }
 
