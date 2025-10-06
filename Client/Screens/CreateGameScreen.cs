@@ -336,12 +336,12 @@ public class CreateGameForm
 
         var submitButtonWidth = SubmitButton.Text.Length + 4;
         var returnButtonWidth = ReturnButton.Text.Length + 4;
-        ButtonsView.Width = submitButtonWidth + returnButtonWidth + 14;
+        ButtonsView.Width = submitButtonWidth + returnButtonWidth + 15;
 
         FormView = new View()
         {
             Width = Dim.Fill(),
-            Height = Dim.Fill()
+            Height = Dim.Fill(),
         };
 
         FormView.Add(
