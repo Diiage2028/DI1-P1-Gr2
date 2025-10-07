@@ -98,22 +98,21 @@ public class CreateGameScreen
         Form.OnReturn = (_, __) => { Returned = true; };
         Form.OnSubmit = (_, __) => { Submitted = true; };
 
-        Form.FormView.X = Form.FormView.Y = Pos.Center();
-        Form.FormView.Width = 70;
-        Form.FormView.Height = 26;
 
+        Form.FormView.Width = 70;
+        Form.FormView.Height = 10;
+
+        Form.FormView.X = Pos.Center();
+        Form.FormView.Y = Pos.Center();
+
+        
         Form.ErrorMessage.Visible = true;
 
         Target.Add(Form.FormView);
 
-        // continue waiting until the user either submits the form or chooses to return
         while (!Returned && !Submitted)
-        {
-            // brief delay to prevent busy-waiting
             await Task.Delay(100);
-        }
 
-        // remove the form from the screen after an action is taken
         Target.Remove(Form.FormView);
     }
 
