@@ -24,7 +24,7 @@ public class FinishRound(
     IRoundsRepository roundsRepository,
     //IAction<ApplyRoundActionParams, Result> applyRoundActionAction,
     IAction<StartRoundParams, Result<Round>> startRoundAction,
-    IAction<FinishGameParams, Result<Game>> finishGameAction,
+    //IAction<FinishGameParams, Result<Game>> finishGameAction,
     IGameHubService gameHubService
 ) : IAction<FinishRoundParams, Result<Round>>
 {

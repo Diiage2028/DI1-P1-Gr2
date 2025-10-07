@@ -4,6 +4,7 @@ using Server.Actions.Contracts;
 using Server.Hubs.Contracts;
 using Server.Models;
 using Server.Persistence.Contracts;
+using Faker;
 
 namespace Server.Actions;
 
@@ -56,21 +57,14 @@ public class ApplyRoundAction(
         var company = await companiesRepository.GetByPlayerId((int)roundAction.PlayerId);
 
         // Apply the specific round action based on type
-        Result result;
         switch (roundAction)
         {
-            case EnrollEmployeeRoundAction enrollEmployeeAction:
-                var createParams = new CreateEmployeeParams("John Smith", GameId : gameId!.Value);
-                var createResult = await createEmployeeAction.PerformAsync(createParams);
-                result = createResult.IsSuccess
-                    ? Result.Ok()
-                    : Result.Fail(createResult.Errors);
-                break;
-            default:
-                result = Result.Fail($"Unknown round action type: {roundAction.Type}");
+            case EnrollEmployeeRoundAction _:
+                var createParams = new CreateEmployeeParams(Faker.Name.FullName(), (int)game.Id);
+                await createEmployeeAction.PerformAsync(createParams);
                 break;
         }
 
-        return result;
+        return Result.Ok();
     }
 }

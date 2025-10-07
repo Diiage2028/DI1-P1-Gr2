@@ -112,6 +112,12 @@ public class ActInRound(
 
         await roundsRepository.SaveRound(round);
 
+        foreach (var action in round.Actions)
+        {
+            var applyRoundActionParams = new ApplyRoundActionParams(RoundAction: action, Game: round.Game);
+            await applyRoundAction.PerformAsync(applyRoundActionParams);
+        }
+
             var finishRoundParams = new FinishRoundParams(RoundId: round.Id);
             var finishRoundResult = await finishRoundAction.PerformAsync(finishRoundParams);
 

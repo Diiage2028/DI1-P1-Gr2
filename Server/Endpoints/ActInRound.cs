@@ -42,8 +42,9 @@ public class ActInRound : IEndpoint
         var parsedActionPayload = parsedActionType switch
         {
             RoundActionType.SendEmployeeForTraining => JsonSerializer.Deserialize<SendEmployeeForTrainingPayload>(body.ActionPayload),
+            RoundActionType.ParticipateInProject => JsonSerializer.Deserialize<ParticipateInProjectRoundAction.ParticipateInProjectPayload>(body.ActionPayload),
+            RoundActionType.EnrollEmployee => JsonSerializer.Deserialize<EnrollEmployeeRoundAction.EnrollEmployeeRoundPayload>(body.ActionPayload),
             RoundActionType.FireAnEmployee => JsonSerializer.Deserialize<FireAnEmployeePayload>(body.ActionPayload),
-            RoundActionType.ConfirmRound => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload),
             _ => JsonSerializer.Deserialize<RoundActionPayload>(body.ActionPayload)
         };
 
