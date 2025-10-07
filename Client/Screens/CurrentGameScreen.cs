@@ -58,7 +58,14 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
         var gameName = CurrentGame is null ? "..." : CurrentGame.Name;
         Target.Title = $"{MainWindow.Title} - [Game {gameName}]";
     }
+    private void RedirectToFinishedGame()
+    {
+        if (CurrentGame == null) return;
 
+        Target.RemoveAll();
+        var finishedScreen = new FinishedGameScreen(Target);
+        finishedScreen.Show();
+    }
     // Connects to SignalR hub to receive game updates
     private async Task LoadGame()
     {
@@ -113,6 +120,10 @@ public class CurrentGameScreen(Window target, int gameId, string playerName)
         while (CurrentGameLoading) { await Task.Delay(100); }
 
         Target.Remove(loadingDialog);
+        if (CurrentGameEnded)
+        {
+            RedirectToFinishedGame();
+        }
     }
 
     private async Task DisplayMainView()
