@@ -112,29 +112,13 @@ public class ActInRound(
 
         await roundsRepository.SaveRound(round);
 
-        if (round.EverybodyPlayed())
-        {
-            // Apply the round action logic before adding to round
-            var applyResult = await applyRoundAction.PerformAsync(new ApplyRoundActionParams(
-                RoundAction: roundAction,
-                GameId: round.GameId
-            ));
-
-            if (applyResult.IsFailed)
-            {
-                return Result.Fail(applyResult.Errors);
-            }
-
-            var finishRoundParams = new FinishRoundParams(Round: round);
+            var finishRoundParams = new FinishRoundParams(RoundId: round.Id);
             var finishRoundResult = await finishRoundAction.PerformAsync(finishRoundParams);
 
             if (finishRoundResult.IsFailed)
             {
                 return Result.Fail(finishRoundResult.Errors);
             }
-        }
-        // IGameHubService → real time update via hub.
-        await gameHubService.UpdateCurrentGame(gameId: round.GameId);
 
         return Result.Ok(round);
     }
