@@ -38,6 +38,14 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet restore
+
+      - name: Consolidate EF Migrations
+        run: |
+          echo "Deleting old migrations..."
+          rm -rf Server/Migrations/*
+
+          echo "Creating baseline migration..."
+          dotnet ef migrations add Initial --project Server/Server.csproj --output-dir Server/Migrations
           
       - name: Install release tools
         run: |
