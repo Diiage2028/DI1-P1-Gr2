@@ -25,12 +25,45 @@ public class ActInRoundValidator : AbstractValidator<ActInRoundParams>
 {
     public ActInRoundValidator()
     {
-        RuleFor(p => p.ActionType).NotEmpty();
-        RuleFor(p => p.ActionPayload).NotEmpty();
-        RuleFor(p => p.RoundId).NotEmpty().When(p => p.Round is null);
-        RuleFor(p => p.Round).NotEmpty().When(p => p.RoundId is null);
-        RuleFor(p => p.PlayerId).NotEmpty().When(p => p.Player is null);
-        RuleFor(p => p.Player).NotEmpty().When(p => p.PlayerId is null);
+        // Use IsInEnum() instead of NotEmpty() for enums
+        RuleFor(p => p.ActionType)
+            .IsInEnum()
+            .WithMessage("Action Type must be a valid action type");
+
+        // Use NotNull() instead of NotEmpty() for objects
+        RuleFor(p => p.ActionPayload)
+            .NotNull()
+            .WithMessage("Action Payload must be specified");
+
+        // Fix the conditional validation
+        RuleFor(p => p.RoundId)
+            .NotEmpty()
+            .When(p => p.Round is null)
+            .WithMessage("RoundId must be provided when Round is null");
+
+        RuleFor(p => p.Round)
+            .NotEmpty()
+            .When(p => p.RoundId is null)
+            .WithMessage("Round must be provided when RoundId is null");
+
+        RuleFor(p => p.PlayerId)
+            .NotEmpty()
+            .When(p => p.Player is null)
+            .WithMessage("PlayerId must be provided when Player is null");
+
+        RuleFor(p => p.Player)
+            .NotEmpty()
+            .When(p => p.PlayerId is null)
+            .WithMessage("Player must be provided when PlayerId is null");
+
+        // Add mutual exclusion rules
+        RuleFor(p => p)
+            .Must(p => !(p.RoundId.HasValue && p.Round != null))
+            .WithMessage("Cannot provide both RoundId and Round");
+
+        RuleFor(p => p)
+            .Must(p => !(p.PlayerId.HasValue && p.Player != null))
+            .WithMessage("Cannot provide both PlayerId and Player");
     }
 }
 
@@ -38,6 +71,7 @@ public class ActInRound(
     IRoundsRepository roundsRepository,
     IPlayersRepository playersRepository,
     IAction<FinishRoundParams, Result<Round>> finishRoundAction,
+    IAction<ApplyRoundActionParams, Result> applyRoundAction,
     IGameHubService gameHubService
 ) : IAction<ActInRoundParams, Result<Round>>
 {
@@ -78,18 +112,19 @@ public class ActInRound(
 
         await roundsRepository.SaveRound(round);
 
-        if (round.EverybodyPlayed())
+        foreach (var action in round.Actions)
         {
-            var finishRoundParams = new FinishRoundParams(Round: round);
+            var applyRoundActionParams = new ApplyRoundActionParams(RoundAction: action, Game: round.Game);
+            await applyRoundAction.PerformAsync(applyRoundActionParams);
+        }
+
+            var finishRoundParams = new FinishRoundParams(RoundId: round.Id);
             var finishRoundResult = await finishRoundAction.PerformAsync(finishRoundParams);
 
             if (finishRoundResult.IsFailed)
             {
                 return Result.Fail(finishRoundResult.Errors);
             }
-        }
-        // IGameHubService → real time update via hub.
-        await gameHubService.UpdateCurrentGame(gameId: round.GameId);
 
         return Result.Ok(round);
     }

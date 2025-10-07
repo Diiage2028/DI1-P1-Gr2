@@ -1,16 +1,10 @@
-
-using System.Text.Json.Nodes;
-
 using FluentResults;
-
 using FluentValidation;
-
-using Microsoft.AspNetCore.SignalR;
-
 using Server.Actions.Contracts;
 using Server.Hubs.Contracts;
 using Server.Models;
 using Server.Persistence.Contracts;
+using Faker;
 
 namespace Server.Actions;
 
@@ -32,8 +26,9 @@ public class ApplyRoundActionValidator : AbstractValidator<ApplyRoundActionParam
 
 public class ApplyRoundAction(
     IGamesRepository gamesRepository,
-    IGameHubService gameHubService
-) : IAction<ApplyRoundActionParams, Result>
+    ICompaniesRepository companiesRepository,
+    IAction<CreateEmployeeParams, Result<Employee>> createEmployeeAction
+        ) : IAction<ApplyRoundActionParams, Result>
 {
     public async Task<Result> PerformAsync(ApplyRoundActionParams actionParams)
     {
@@ -45,7 +40,7 @@ public class ApplyRoundAction(
             return Result.Fail(actionValidationResult.Errors.Select(e => e.ErrorMessage));
         }
 
-        var (action, gameId, game) = actionParams;
+        var (roundAction, gameId, game) = actionParams;
 
         game ??= await gamesRepository.GetById(gameId!.Value);
 
@@ -54,10 +49,22 @@ public class ApplyRoundAction(
             return Result.Fail($"Game with Id \"{gameId}\" not found.");
         }
 
-        // @todo: Implement the logic for applying the round action
-        Console.WriteLine(JsonObject.Parse(action.ToString() ?? "{}")!.ToJsonString());
+        if (roundAction.PlayerId == null)
+        {
+            return Result.Fail("PlayerId is required for round action.");
+        }
 
-        await gameHubService.UpdateCurrentGame(gameId: gameId);
+        var company = await companiesRepository.GetByPlayerId((int)roundAction.PlayerId);
+
+        // Apply the specific round action based on type
+        switch (roundAction)
+        {
+            case EnrollEmployeeRoundAction _:
+                var createParams = new CreateEmployeeParams(Faker.Name.FullName(), (int)game.Id);
+                await createEmployeeAction.PerformAsync(createParams);
+                break;
+        }
+
         return Result.Ok();
     }
 }

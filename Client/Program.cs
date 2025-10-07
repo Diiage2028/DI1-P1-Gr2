@@ -13,7 +13,7 @@ public class Program
         var builder = new ConfigurationBuilder()
             .AddJsonFile($"{Environment.CurrentDirectory}/appsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile($"{AppContext.BaseDirectory}/appsettings.json", optional: true, reloadOnChange: true);
-        
+
         var configuration = builder.Build();
 
         var apiConfig = configuration.GetSection("WebApiServer");
@@ -64,11 +64,11 @@ public class MainWindow : Window
         Width = Dim.Fill();
         Height = Dim.Fill();
         ColorScheme = new ColorScheme(
-            new Terminal.Gui.Attribute(Color.Blue, Color.Black),
-            new Terminal.Gui.Attribute(Color.Black, Color.White),
-            new Terminal.Gui.Attribute(Color.Black, Color.White),
-            new Terminal.Gui.Attribute(Color.Blue, Color.Black),
-            new Terminal.Gui.Attribute(Color.Black, Color.White)
+            new Terminal.Gui.Attribute(Color.Blue, Color.BrightBlue),
+            new Terminal.Gui.Attribute(Color.White, Color.Blue),
+            new Terminal.Gui.Attribute(Color.White, Color.Blue),
+            new Terminal.Gui.Attribute(Color.Blue, Color.BrightBlue),
+            new Terminal.Gui.Attribute(Color.White, Color.Blue)
         );
     }
 }

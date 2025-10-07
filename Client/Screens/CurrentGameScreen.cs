@@ -3,6 +3,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 using Client.Records;
 
@@ -419,6 +421,7 @@ public class CurrentGameCompanyView : CurrentGameView
     {
         Game = game;
         PlayerName = playerName;
+
         CurrentPlayer = Game.Players.First(p => p.Name == PlayerName);
 
         Width = Dim.Auto(DimAutoStyle.Auto);
@@ -476,7 +479,7 @@ public class CurrentGameCompanyView : CurrentGameView
         Add(Body);
     }
 
-    private void SetupLeftBody()
+    private async void SetupLeftBody()
     {
         LeftBody = new()
         {
@@ -486,11 +489,13 @@ public class CurrentGameCompanyView : CurrentGameView
             Height = Dim.Fill()
         };
 
-        SetupEmployees();
+        Body!.Add(LeftBody);
+
+        await SetupEmployees();
         SetupProjects();
         SetupFormation();
 
-        Body!.Add(LeftBody);
+
     }
 
     private void SetupRightBody()
@@ -571,12 +576,45 @@ public class CurrentGameCompanyView : CurrentGameView
 
         Header!.Add(Rounds);
     }
+    private async Task<List<EmployeeOverview>> LoadEmployees(int gameId)
+    {
+        try
+        {
+            var httpHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            };
 
-    private void SetupEmployees()
+            using var httpClient = new HttpClient(httpHandler);
+            httpClient.BaseAddress = new Uri($"{WssConfig.WebApiServerScheme}://{WssConfig.WebApiServerDomain}:{WssConfig.WebApiServerPort}");
+
+            var response = await httpClient.GetAsync($"/employee/game/{gameId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var employees = JsonSerializer.Deserialize<List<EmployeeOverview>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return employees ?? new List<EmployeeOverview>();
+            }
+            else
+            {
+                // Gérer les erreurs HTTP
+                throw new Exception($"API returned {response.StatusCode}"); ;
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to fetch employees: {ex.Message}");
+        }
+    }
+    private async Task SetupEmployees()
     {
         Employees = new()
         {
-            Title = "Employees",
+            Title = "Available employees",
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
@@ -594,12 +632,12 @@ public class CurrentGameCompanyView : CurrentGameView
 
         var employeesData = new List<TreeNode>();
 
-        foreach (var employee in CurrentPlayer.Company.Employees.ToList())
+        var employees = await LoadEmployees(Game.Id);
+        foreach (var employee in employees)
         {
-            var node = new TreeNode($"{employee.Name} | {employee.Salary} $");
-            var skills = employee.Skills.ToList();
+            var node = new TreeNode($"{employee.Name} | {employee.Salary:F0} $");
 
-            foreach (var skill in skills)
+            foreach (var skill in employee.Skills)
             {
                 node.Children.Add(new TreeNode($"{skill.Name} | {skill.Level}"));
             }
@@ -770,7 +808,7 @@ public class CurrentGameActionList : ListView
     {
         SendEmployeeForTraining,
         ParticipateInProject,
-        EnrollInFormation,
+        EnrollEmployee,
         FireAnEmployee,
         ConfirmRound
     }
@@ -778,7 +816,7 @@ public class CurrentGameActionList : ListView
     private readonly CurrentGameActionListDataSource Actions = [
         Action.SendEmployeeForTraining,
         Action.ParticipateInProject,
-        Action.EnrollInFormation,
+        Action.EnrollEmployee,
         Action.FireAnEmployee,
         Action.ConfirmRound
     ];
@@ -817,8 +855,8 @@ public class CurrentGameActionListDataSource : List<CurrentGameActionList.Action
             case (int) CurrentGameActionList.Action.ParticipateInProject:
                 driver.AddStr("Participate In Project");
                 break;
-            case (int) CurrentGameActionList.Action.EnrollInFormation:
-                driver.AddStr("Enroll In Formation");
+            case (int) CurrentGameActionList.Action.EnrollEmployee:
+                driver.AddStr("Enroll In Employee");
                 break;
             case (int) CurrentGameActionList.Action.FireAnEmployee:
                 driver.AddStr("Fire An Employee");

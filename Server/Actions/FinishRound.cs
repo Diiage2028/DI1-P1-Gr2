@@ -7,8 +7,6 @@ using Server.Hubs.Contracts;
 using Server.Models;
 using Server.Persistence.Contracts;
 
-using static Server.Models.GenerateNewConsultantRoundAction;
-
 namespace Server.Actions;
 
 public sealed record FinishRoundParams(int? RoundId = null, Round? Round = null);
@@ -24,9 +22,9 @@ public class FinishRoundValidator : AbstractValidator<FinishRoundParams>
 
 public class FinishRound(
     IRoundsRepository roundsRepository,
-    IAction<ApplyRoundActionParams, Result> applyRoundActionAction,
+    //IAction<ApplyRoundActionParams, Result> applyRoundActionAction,
     IAction<StartRoundParams, Result<Round>> startRoundAction,
-    IAction<FinishGameParams, Result<Game>> finishGameAction,
+    //IAction<FinishGameParams, Result<Game>> finishGameAction,
     IGameHubService gameHubService
 ) : IAction<FinishRoundParams, Result<Round>>
 {
@@ -49,34 +47,6 @@ public class FinishRound(
             return Result.Fail($"Round with Id \"{roundId}\" not found.");
         }
 
-        var rnd = new Random();
-
-        var newConsultantShouldBeGenerated = rnd.Next(2) == 1;
-
-        if (newConsultantShouldBeGenerated)
-        {
-            var action = RoundAction.CreateForType(
-                RoundActionType.GenerateNewConsultant,
-                0,
-                new GenerateNewConsultantPayload { GameId = round.GameId }
-            );
-
-            round.Actions.Add(action);
-
-            await roundsRepository.SaveRound(round);
-        }
-
-        foreach (var action in round.Actions)
-        {
-            var applyRoundActionParams = new ApplyRoundActionParams(RoundAction: action, Game: round.Game);
-            var applyRoundActionResult = await applyRoundActionAction.PerformAsync(applyRoundActionParams);
-
-            if (applyRoundActionResult.IsFailed)
-            {
-                return Result.Fail(applyRoundActionResult.Errors);
-            }
-        }
-
         if (round.Game.CanStartANewRound())
         {
             var startRoundActionParams = new StartRoundParams(Game: round.Game);
@@ -87,19 +57,7 @@ public class FinishRound(
 
             return Result.Ok(newRound);
         }
-        else
-        {
-            var finishGameActionParams = new FinishGameParams(Game: round.Game);
-            var finishGameActionResult = await finishGameAction.PerformAsync(finishGameActionParams);
 
-            if (finishGameActionResult.IsFailed)
-            {
-                return Result.Fail(finishGameActionResult.Errors);
-            }
-
-            await gameHubService.UpdateCurrentGame(gameId: round.GameId);
-
-            return Result.Ok(round);
-        }
+        return Result.Ok(round);
     }
 }

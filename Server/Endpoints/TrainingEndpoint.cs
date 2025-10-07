@@ -1,27 +1,28 @@
 using FluentResults;
+
+using Microsoft.AspNetCore.Mvc;
+
 using Server.Actions.Contracts;
 using Server.Endpoints.Contracts;
 using Server.Models;
 
 namespace Server.Endpoints;
 
-public class StatsEndpoint : IEndpoint
+public class TrainingEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/stats", Handler).WithTags("Stats");
+        app.MapGet("/gettraining", Handler).WithTags("Training");
     }
-
     public static async Task<IResult> Handler(
-        IAction<GetStatsParams, Result<GameStat>> getStatsAction
+        [FromServices] IAction<GetTrainingParams, Result<List<Training>>> getTrainingAction
     )
     {
-        var actionParams = new GetStatsParams();
-        var actionResult = await getStatsAction.PerformAsync(actionParams);
+        var actionParams = new GetTrainingParams();
+        var actionResult = await getTrainingAction.PerformAsync(actionParams);
 
         if (actionResult.IsFailed)
         {
-
             return Results.BadRequest(new { Errors = actionResult.Errors.Select(e => e.Message) });
         }
 

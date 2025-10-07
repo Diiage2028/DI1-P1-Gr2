@@ -17,6 +17,9 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
     public DbSet<Player> Players { get; set; } = null!;
     public DbSet<Round> Rounds { get; set; } = null!;
     public DbSet<Skill> Skills { get; set; } = null!;
+    public DbSet<Training> Training { get; set; } = null!;
+    public DbSet<InTraining> InTraining { get; set; } = null!;
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) // Creates instance of connexion
     {
@@ -68,6 +71,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.ToTable("employees");
             e.HasKey(e => e.Id);
             e.Property(e => e.Name).HasColumnType("varchar(255)");
+            e.Property(e => e.Salary).HasColumnType("integer");
             e.HasOne(e => e.Game)
                 .WithMany()
                 .HasForeignKey(e => e.GameId)
@@ -75,7 +79,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
             e.HasOne(e => e.Company)
                 .WithMany(e => e.Employees)
                 .HasForeignKey(e => e.CompanyId)
-                .IsRequired()
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
             e.OwnsMany(e => e.Skills, builder => builder.ToJson());
         });
@@ -154,6 +158,65 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
                 new Skill("GraphQL") { Id = 19 },
                 new Skill("REST APIs") { Id = 20 }
             );
+        });
+        modelBuilder.Entity<Training>(e =>
+        {
+            e.ToTable("trainings");
+            e.HasKey(e => e.Id);
+
+            e.Property(e => e.Name).HasColumnType("varchar(255)").IsRequired();
+            e.Property(e => e.Cost).HasColumnType("integer").IsRequired();
+            e.Property(e => e.NbRound).HasColumnType("integer").IsRequired();
+
+            e.HasOne(e => e.Skill)
+                .WithMany()
+                .HasForeignKey(e => e.SkillId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasData(
+                  new Training { Id = 1, Name = "Formation HTML", Cost = 5000, NbRound = 2, SkillId = 1 },
+                  new Training { Id = 2, Name = "Formation CSS", Cost = 5000, NbRound = 2, SkillId = 2 },
+                  new Training { Id = 3, Name = "Formation JavaScript", Cost = 5000, NbRound = 2, SkillId = 3 },
+                  new Training { Id = 4, Name = "Formation TypeScript", Cost = 5000, NbRound = 2, SkillId = 4 },
+                  new Training { Id = 5, Name = "Formation React", Cost = 5000, NbRound = 2, SkillId = 5 },
+                  new Training { Id = 6, Name = "Formation Angular", Cost = 5000, NbRound = 2, SkillId = 6 },
+                  new Training { Id = 7, Name = "Formation Vue.js", Cost = 5000, NbRound = 2, SkillId = 7 },
+                  new Training { Id = 8, Name = "Formation Node.js", Cost = 5000, NbRound = 2, SkillId = 8 },
+                  new Training { Id = 9, Name = "Formation Express.js", Cost = 5000, NbRound = 2, SkillId = 9 },
+                  new Training { Id = 10, Name = "Formation ASP.NET Core", Cost = 5000, NbRound = 2, SkillId = 10 },
+                  new Training { Id = 11, Name = "Formation Ruby on Rails", Cost = 5000, NbRound = 2, SkillId = 11 },
+                  new Training { Id = 12, Name = "Formation Django", Cost = 5000, NbRound = 2, SkillId = 12 },
+                  new Training { Id = 13, Name = "Formation Flask", Cost = 5000, NbRound = 2, SkillId = 13 },
+                  new Training { Id = 14, Name = "Formation PHP", Cost = 5000, NbRound = 2, SkillId = 14 },
+                  new Training { Id = 15, Name = "Formation Laravel", Cost = 5000, NbRound = 2, SkillId = 15 },
+                  new Training { Id = 16, Name = "Formation Spring Boot", Cost = 5000, NbRound = 2, SkillId = 16 },
+                  new Training { Id = 17, Name = "Formation SQL", Cost = 5000, NbRound = 2, SkillId = 17 },
+                  new Training { Id = 18, Name = "Formation NoSQL", Cost = 5000, NbRound = 2, SkillId = 18 },
+                  new Training { Id = 19, Name = "Formation GraphQL", Cost = 5000, NbRound = 2, SkillId = 19 },
+                  new Training { Id = 20, Name = "Formation REST APIs", Cost = 5000, NbRound = 2, SkillId = 20 }
+               );
+
+        });
+
+        modelBuilder.Entity<InTraining>(e =>
+        {
+            e.ToTable("in_trainings");
+            e.HasKey(e => new { e.EmployeeId, e.TrainingId , e.StartRoundId });
+
+
+            e.HasOne(e => e.Employee)
+                .WithMany()
+                .HasForeignKey(e => e.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(e => e.Training)
+                .WithMany()
+                .HasForeignKey(e => e.TrainingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(e => e.Round)
+                .WithMany()
+                .HasForeignKey(e => e.StartRoundId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
