@@ -1,6 +1,7 @@
 using FluentResults;
 
 using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
 
 using Server.Actions;
 using Server.Actions.Contracts;
@@ -46,6 +47,8 @@ builder.Services.AddTransient<IAction<GetEmployeesByGameIdParams, Result<List<Em
 
 builder.Services.AddTransient<IGameHubService, GameHubService>();
 builder.Services.AddTransient<IMainHubService, MainHubService>();
+
+Env.Load();
 
 var app = builder.Build();
 

@@ -23,13 +23,11 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) // Creates instance of connexion
     {
-        var dbOptions = configuration.GetSection("Database");
-
-        var dbHost = dbOptions.GetValue<string>("Host");
-        var dbPort = dbOptions.GetValue<string>("Port");
-        var dbName = dbOptions.GetValue<string>("Name");
-        var dbUser = dbOptions.GetValue<string>("User");
-        var dbPass = dbOptions.GetValue<string>("Pass");
+        var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+        var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+        var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+        var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+        var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
 
         var dbConnectionString = $"Host={dbHost};Port={dbPort};Db={dbName};Username={dbUser};Password={dbPass}";
 
@@ -41,7 +39,7 @@ public class WssDbContext(DbContextOptions options, IConfiguration configuration
         modelBuilder.Entity<Company>(e =>
         {
             e.ToTable("companies");
-            e.HasKey(e => e.Id); 
+            e.HasKey(e => e.Id);
             e.Property(e => e.Name).HasColumnType("varchar(255)");
             e.Property(e => e.Treasury).HasColumnType("integer").HasDefaultValue(1000000); // Default value
             e.HasOne(e => e.Player)
