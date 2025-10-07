@@ -18,13 +18,13 @@ public class Program
 
         var apiConfig = configuration.GetSection("WebApiServer");
         WssConfig.WebApiServerScheme = apiConfig["Scheme"] is null ? "https" : apiConfig["Scheme"]!;
-        WssConfig.WebApiServerDomain = apiConfig["Domain"] is null ? "localhost" : apiConfig["Domain"]!;
-        WssConfig.WebApiServerPort = apiConfig["Port"] is null ? "7032" : apiConfig["Port"]!;
+        WssConfig.WebApiServerDomain = apiConfig["Domain"] is null ? "oak.tail025bf6.ts.net" : apiConfig["Domain"]!;
+        WssConfig.WebApiServerPort = apiConfig["Port"] is null ? "443" : apiConfig["Port"]!;
 
         var socketConfig = configuration.GetSection("WebSocketServer");
         WssConfig.WebSocketServerScheme = apiConfig["Scheme"] is null ? "wss" : apiConfig["Scheme"]!;
-        WssConfig.WebSocketServerDomain = apiConfig["Domain"] is null ? "localhost" : apiConfig["Domain"]!;
-        WssConfig.WebSocketServerPort = apiConfig["Port"] is null ? "7032" : apiConfig["Port"]!;
+        WssConfig.WebSocketServerDomain = apiConfig["Domain"] is null ? "oak.tail025bf6.ts.net" : apiConfig["Domain"]!;
+        WssConfig.WebSocketServerPort = apiConfig["Port"] is null ? "443" : apiConfig["Port"]!;
 
         Application.Init();
         Application.Invoke(async () =>
