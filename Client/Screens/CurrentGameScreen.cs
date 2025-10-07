@@ -856,7 +856,7 @@ public class CurrentGameActionListDataSource : List<CurrentGameActionList.Action
                 driver.AddStr("Participate In Project");
                 break;
             case (int) CurrentGameActionList.Action.EnrollEmployee:
-                driver.AddStr("Enroll In Formation");
+                driver.AddStr("Hire Employee");
                 break;
             case (int) CurrentGameActionList.Action.FireAnEmployee:
                 driver.AddStr("Fire An Employee");
