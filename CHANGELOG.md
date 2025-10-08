@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/Diiage2028/DI1-P1-Gr2/compare/v1.2.2...v1.3.0) (2025-10-08)
+
+
+### Features
+
+* Change WebSocket server scheme from 'wss' to 'ws' ([34a856d](https://github.com/Diiage2028/DI1-P1-Gr2/commit/34a856de6f95cd108c0c5e3ab3f29a4f32ba781a))
+
 ## [1.2.2](https://github.com/Diiage2028/DI1-P1-Gr2/compare/v1.2.1...v1.2.2) (2025-10-07)
 
 ## [1.2.1](https://github.com/Diiage2028/DI1-P1-Gr2/compare/v1.2.0...v1.2.1) (2025-10-07)
