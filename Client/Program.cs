@@ -17,14 +17,14 @@ public class Program
         var configuration = builder.Build();
 
         var apiConfig = configuration.GetSection("WebApiServer");
-        WssConfig.WebApiServerScheme = apiConfig["Scheme"] is null ? "https" : apiConfig["Scheme"]!;
-        WssConfig.WebApiServerDomain = apiConfig["Domain"] is null ? "oak.tail025bf6.ts.net" : apiConfig["Domain"]!;
-        WssConfig.WebApiServerPort = apiConfig["Port"] is null ? "443" : apiConfig["Port"]!;
+        WssConfig.WebApiServerScheme = apiConfig["Scheme"] is null ? "http" : apiConfig["Scheme"]!;
+        WssConfig.WebApiServerDomain = apiConfig["Domain"] is null ? "20.117.200.157" : apiConfig["Domain"]!;
+        WssConfig.WebApiServerPort = apiConfig["Port"] is null ? "5176" : apiConfig["Port"]!;
 
         var socketConfig = configuration.GetSection("WebSocketServer");
         WssConfig.WebSocketServerScheme = apiConfig["Scheme"] is null ? "wss" : apiConfig["Scheme"]!;
-        WssConfig.WebSocketServerDomain = apiConfig["Domain"] is null ? "oak.tail025bf6.ts.net" : apiConfig["Domain"]!;
-        WssConfig.WebSocketServerPort = apiConfig["Port"] is null ? "443" : apiConfig["Port"]!;
+        WssConfig.WebSocketServerDomain = apiConfig["Domain"] is null ? "20.117.200.157" : apiConfig["Domain"]!;
+        WssConfig.WebSocketServerPort = apiConfig["Port"] is null ? "5176" : apiConfig["Port"]!;
 
         Application.Init();
         Application.Invoke(async () =>
