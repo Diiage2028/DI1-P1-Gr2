@@ -22,7 +22,7 @@ public class Program
         WssConfig.WebApiServerPort = apiConfig["Port"] is null ? "5176" : apiConfig["Port"]!;
 
         var socketConfig = configuration.GetSection("WebSocketServer");
-        WssConfig.WebSocketServerScheme = apiConfig["Scheme"] is null ? "wss" : apiConfig["Scheme"]!;
+        WssConfig.WebSocketServerScheme = apiConfig["Scheme"] is null ? "ws" : apiConfig["Scheme"]!;
         WssConfig.WebSocketServerDomain = apiConfig["Domain"] is null ? "20.117.200.157" : apiConfig["Domain"]!;
         WssConfig.WebSocketServerPort = apiConfig["Port"] is null ? "5176" : apiConfig["Port"]!;
 
